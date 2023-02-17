@@ -1,7 +1,7 @@
 
 import csv 
 
-import posts_data_generator 
+import data_collecting.reddit_posts_data_generator as reddit_posts_data_generator 
 import matplotlib.pyplot as plt
 
 # Open csv file with S&P 500 ticker, company names and organize ticker and company names by putting them into the same list
