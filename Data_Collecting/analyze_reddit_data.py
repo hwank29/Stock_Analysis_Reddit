@@ -1,17 +1,11 @@
+import reddit_posts_data_generator as generator
+import pyEX as p
 
 
-# from collections import Counter
-# p = Counter(" ".join(dt).split()).most_common(10)
-# rslt = pd.DataFrame(p, columns=['Word', 'Frequency'])
-#print(rslt)
+iex_token = 'pk_94a8e901cb624383925326592a9ac23a'
 
-# Create a variable for most frquently appeared words after data cleaning 
+#for x in 
+api_url = f'https://cloud.iexapis.com/stable/stock/{key}/quote?token={iex_token}'
 
-#most_used_words = pd.DataFrame(pd.Series(' '.join(filtered_selftext_post_data).split()).value_counts()).to_string()
-
-#print(most_used_words)
-
-#for word in most_used_words['Word']:
-#    print(word)
-
+#generator.data_rank_most_mentioned_stock['Change vs S&P 500'] = 
 

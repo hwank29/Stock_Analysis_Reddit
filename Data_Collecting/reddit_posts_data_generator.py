@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from urllib.request import urlopen
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -7,25 +8,26 @@ import nltk
 import string
 import json
 import csv
-import os
 import re
 import csv
-import requests 
+import time
 
-
-
-def date_conversion(time):
-    # If the input was in YYYY-MM-DD format
-    if re.search('^[\d]{4}-[\d]{2}-[\d]{2}$', time):
-        date = dt.datetime.strptime(time, '%Y-%m-%d')
+def date_conversion(period):
+    # conditions to check (whether in correct format(YYYY-mm-dd) and time period within 3 years)
+    test_correct_date = [
+                        (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) < dt.datetime.timestamp(dt.datetime.now())),
+                        (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) > dt.datetime.timestamp(dt.datetime.now() - relativedelta(years=3)))
+                        ]
+    if all(test_correct_date):
+        date = dt.datetime.strptime(period, '%Y-%m-%d')
         #return timestamp
         return dt.datetime.timestamp(date)
-    # if the input was in timestamp format if you have specific time 
-    return time
+    # if the input was not in the correct format or does not fullfill the test_corect_date conditions
 
 # Converts YYYY-MM-DD to epoch time. 'before' and 'after' accept epoch for precise time
-start_date_input = int(date_conversion(input("What would be your start time?(Format -- YYYY-MM-DD | timestamp(ex.1669824000)) :")))
-end_date_input =  int(date_conversion(input("What would be your end time?(Format -- YYYY-MM-DD | timestamp(ex.1669824000)) :")))
+start_date_input = int(date_conversion(input("What would be your start time within 3 years?(Format -- YYYY-MM-DD) :")))
+end_date_input =  int(date_conversion(input("What would be your end time? within 3 years(Format -- YYYY-MM-DD) :")))
+
 
 # Organize company name and ticker dictionaries 
 with open('Data/S&P500_tickers_names.csv', 'r') as csv_file:
@@ -57,7 +59,7 @@ def cleaning(text):
     text = text.translate(str.maketrans('', '', string.punctuation.replace('$','') + '’'))
     text_tokenize = word_tokenize(text)
     # Make a list variable for words that are not actually mentioned as tickers but give misinformation 
-    new_stop_words = ['low', 'dow', 'see', 'k', 'amp', 'well', 'im', 'tech', 'key', 'peak', 'fast', 'hes', 'dd', ]
+    new_stop_words = ['low', 'dow', 'see', 'k', 'amp', 'well', 'im', 'tech', 'key', 'peak', 'fast', 'hes', 'dd', 'factset']
     # Makes a variable for stop words and remove any stop words from column title and selftext
     stop_words = nltk.corpus.stopwords.words('english')
     stop_words.extend(new_stop_words)
@@ -103,9 +105,8 @@ def post_data_generator(start_time, end_time):
     return filtered_posts
 
 post_data = post_data_generator(start_date_input, end_date_input)
-post_num = len(post_data)
+# post_num = len(post_data)
 
-post_data['selftext'].to_csv('check1.csv', index=False)
 # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
 for text in post_data['selftext']:
     for word in word_tokenize(text):
@@ -121,28 +122,21 @@ for key, value in company_ticker_dict.items():
 company_mentioned_together = {key: value for key, value in sorted(company_mentioned_together.items(), key=lambda item: item[1], reverse=True)}    
 
 name_list, ticker_list, mentioned_num = [], [], []
+
 for key, value in company_mentioned_together.items():
     name_list.append(company_capitalize_dict[key])
     ticker_list.append(ticker_capitalize_dict[company_ticker_dict[key]])
     mentioned_num.append(value)
 
-# rank top 25 most mentioned stops and add helpful data for investing
-rank_most_mentioned_stock = {
+# rank top 25 most mentioned stops
+data_rank_most_mentioned_stock = {
     'Name' : name_list[:25],
     'Ticker' : ticker_list[:25],
-    'Mentioned' : mentioned_num[:25],
-    'Range during input time' : None, 
-    'Volatility(Highest vs Lowest)': None,
-    'Change vs S&P 500' : None
+    'Mentioned' : mentioned_num[:25]
 } 
+# convert to dataframe to make it more readable, index start from 1 
+data_rank_most_mentioned_stock = pd.DataFrame(data=data_rank_most_mentioned_stock, 
+                                              index=pd.RangeIndex(start=1, stop=26))
+#'Date Range' : f'{dt.datetime.fromtimestamp(start_date_input).strftime("%Y-%m-%d")} ~ {dt.datetime.fromtimestamp(end_date_input).strftime("%Y-%m-%d")}',
 
-# convert to dataframe to make it more readable 
-rank_most_mentioned_stock = pd.DataFrame(data=rank_most_mentioned_stock)
-
-# Get top 25 most mentioned stocks 
-# r = {key: rank for rank, key in enumerate(sorted(set(company_name_dict.values()), reverse=True))}
-# print({k: r[v] for k,v in x.items()}
-
-#print(list(ticker_name_dict.keys()))
-#print(company_name_dict)
-#print(ticker_name_dict)
+print(data_rank_most_mentioned_stock)
