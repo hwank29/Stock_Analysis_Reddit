@@ -14,6 +14,8 @@ import time
 
 def date_conversion(period):
     # conditions to check (whether in correct format(YYYY-mm-dd) and time period within 3 years)
+    assert re.match("^(20\d{2})-(\d{2})-(\d{2})$", period), "Your input has to be in YYYY-MM-DD format"
+
     test_correct_date = [
                         (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) < dt.datetime.timestamp(dt.datetime.now())),
                         (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) > dt.datetime.timestamp(dt.datetime.now() - relativedelta(years=3)))
@@ -27,6 +29,7 @@ def date_conversion(period):
 # Converts YYYY-MM-DD to epoch time. 'before' and 'after' accept epoch for precise time
 start_date_input = int(date_conversion(input("What would be your start time within 3 years?(Format -- YYYY-MM-DD) :")))
 end_date_input =  int(date_conversion(input("What would be your end time? within 3 years(Format -- YYYY-MM-DD) :")))
+date_range = [dt.datetime.fromtimestamp(start_date_input).strftime("%Y-%m-%d"), dt.datetime.fromtimestamp(end_date_input).strftime("%Y-%m-%d")]
 
 
 # Organize company name and ticker dictionaries 
@@ -59,7 +62,7 @@ def cleaning(text):
     text = text.translate(str.maketrans('', '', string.punctuation.replace('$','') + '’'))
     text_tokenize = word_tokenize(text)
     # Make a list variable for words that are not actually mentioned as tickers but give misinformation 
-    new_stop_words = ['low', 'dow', 'see', 'k', 'amp', 'well', 'im', 'tech', 'key', 'peak', 'fast', 'hes', 'dd', 'factset']
+    new_stop_words = ['low', 'dow', 'see', 'k', 'amp', 'well', 'im', 'tech', 'key', 'peak', 'fast', 'hes', 'dd', 'factset', 'cost']
     # Makes a variable for stop words and remove any stop words from column title and selftext
     stop_words = nltk.corpus.stopwords.words('english')
     stop_words.extend(new_stop_words)
@@ -105,7 +108,7 @@ def post_data_generator(start_time, end_time):
     return filtered_posts
 
 post_data = post_data_generator(start_date_input, end_date_input)
-# post_num = len(post_data)
+post_num = len(post_data)
 
 # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
 for text in post_data['selftext']:
@@ -129,14 +132,11 @@ for key, value in company_mentioned_together.items():
     mentioned_num.append(value)
 
 # rank top 25 most mentioned stops
-data_rank_most_mentioned_stock = {
+data_mentioned_stock = {
     'Name' : name_list[:25],
     'Ticker' : ticker_list[:25],
-    'Mentioned' : mentioned_num[:25]
+    'Mentioned' : mentioned_num[:25],
+    'Highest' : [],
+    'Lowest' : [],
+    'Change vs S&P500': [],
 } 
-# convert to dataframe to make it more readable, index start from 1 
-data_rank_most_mentioned_stock = pd.DataFrame(data=data_rank_most_mentioned_stock, 
-                                              index=pd.RangeIndex(start=1, stop=26))
-#'Date Range' : f'{dt.datetime.fromtimestamp(start_date_input).strftime("%Y-%m-%d")} ~ {dt.datetime.fromtimestamp(end_date_input).strftime("%Y-%m-%d")}',
-
-print(data_rank_most_mentioned_stock)

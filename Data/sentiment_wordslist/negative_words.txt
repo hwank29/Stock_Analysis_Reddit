@@ -252,11 +252,15 @@ baffling
 bait
 balk
 banal
+ban
+banned
 banalize
 bane
+barely
 banish
 banishment
 bankrupt
+bankrun
 barbarian
 barbaric
 barbarically
@@ -274,6 +278,7 @@ bastards
 battered
 battering
 batty
+bear
 bearish
 beastly
 bedlam
@@ -585,7 +590,6 @@ clique
 clog
 clogged
 clogs
-cloud
 clouding
 cloudy
 clueless
@@ -804,6 +808,7 @@ cursed
 curses
 curt
 cuss
+cut
 cussed
 cutthroat
 cynical
@@ -1826,6 +1831,9 @@ gall
 galling
 gallingly
 galls
+tight
+tightening
+qt
 gangster
 gape
 garbage
@@ -1991,6 +1999,7 @@ haughty
 haunt
 haunting
 havoc
+hawk
 hawkish
 haywire
 hazard
@@ -2400,6 +2409,7 @@ inflammation
 inflammatory
 inflammed
 inflated
+inflation
 inflationary
 inflexible
 inflict
@@ -2970,6 +2980,8 @@ motionless
 motley
 mourn
 mourner
+only
+
 mournful
 mournfully
 muddle
@@ -3766,6 +3778,7 @@ sh*t
 shabby
 shadowy
 shady
+sell
 shake
 shaky
 shallow
@@ -3794,6 +3807,7 @@ shocked
 shocking
 shockingly
 shoddy
+short
 short-lived
 shortage
 shortchange
@@ -4254,6 +4268,7 @@ throbbing
 throbs
 throttle
 thug
+never
 thumb-down
 thumbs-down
 thwart
@@ -4673,6 +4688,7 @@ wallow
 wane
 waning
 wanton
+war
 war-like
 warily
 wariness

@@ -67,9 +67,6 @@ affirmation
 affirmative
 affluence
 affluent
-afford
-affordable
-affordably
 afordable
 agile
 agilely
@@ -194,6 +191,7 @@ benevolence
 benevolent
 benifits
 best
+beat
 best-known
 best-performing
 best-selling
@@ -242,6 +240,7 @@ brilliant
 brilliantly
 brisk
 brotherly
+bull
 bullish
 buoyant
 cajole
@@ -252,6 +251,7 @@ capability
 capable
 capably
 captivate
+buy
 captivating
 carefree
 cashback
@@ -291,7 +291,6 @@ cleaner
 cleanest
 cleanliness
 cleanly
-clear
 clear-cut
 cleared
 clearer
@@ -437,6 +436,9 @@ dextrous
 dignified
 dignify
 dignity
+down
+dove
+dovish
 diligence
 diligent
 diligently
@@ -473,6 +475,7 @@ easier
 easiest
 easiness
 easing
+qe
 easy
 easy-to-use
 easygoing
@@ -557,7 +560,6 @@ enlighten
 enlightenment
 enliven
 ennoble
-enough
 enrapt
 enrapture
 enraptured
@@ -726,7 +728,6 @@ fervor
 festive
 fidelity
 fiery
-fine
 fine-looking
 finely
 finer
@@ -761,7 +762,6 @@ fortunate
 fortunately
 fortune
 fragrant
-free
 freed
 freedom
 freedoms
@@ -781,6 +781,7 @@ futuristic
 gaiety
 gaily
 gain
+gainer
 gained
 gainful
 gainfully
@@ -827,9 +828,7 @@ god-given
 god-send
 godlike
 godsend
-gold
 golden
-good
 goodly
 goodness
 goodwill
@@ -854,13 +853,11 @@ gratify
 gratifying
 gratifyingly
 gratitude
-great
 greatest
 greatness
 grin
 groundbreaking
 guarantee
-guidance
 guiltless
 gumption
 gush
@@ -1007,6 +1004,7 @@ instantly
 instructive
 instrumental
 integral
+rally
 integrated
 intelligence
 intelligent
@@ -1041,6 +1039,7 @@ jollify
 jolly
 jovial
 joy
+jump
 joyful
 joyfully
 joyous
@@ -1076,7 +1075,6 @@ leads
 lean
 led
 legendary
-leverage
 levity
 liberate
 liberation
@@ -1085,12 +1083,12 @@ lifesaver
 light-hearted
 lighter
 likable
-like
 liked
 likes
 liking
 lionhearted
 lively
+long
 logical
 long-lasting
 lovable
@@ -1146,6 +1144,7 @@ marvelous
 marvelously
 marvelousness
 marvels
+massive
 master
 masterful
 masterfully
@@ -1530,7 +1529,7 @@ rich
 richer
 richly
 richness
-right
+
 righten
 righteous
 righteously
@@ -1569,7 +1568,6 @@ satisfy
 satisfying
 satisified
 saver
-savings
 savior
 savvy
 scenic
@@ -1593,7 +1591,6 @@ sensitive
 serene
 serenity
 sexy
-sharp
 sharper
 sharpest
 shimmering
@@ -1817,7 +1814,7 @@ titillatingly
 togetherness
 tolerable
 toll-free
-top
+moon
 top-notch
 top-quality
 topnotch
@@ -1932,7 +1929,6 @@ warmhearted
 warmly
 warmth
 wealthy
-welcome
 well
 well-backlit
 well-balanced
@@ -1989,7 +1985,6 @@ workable
 worked
 works
 world-famous
-worth
 worth-while
 worthiness
 worthwhile
