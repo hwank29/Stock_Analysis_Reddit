@@ -1,0 +1,165 @@
+  html {
+    font-family: Lato, sans-serif;
+    font-size: 12px;
+  }
+
+  body {
+    display: flex; 
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100vh;
+    margin: 0;
+    position: relative; 
+  }
+
+  *,
+  *::after,
+  *::before {
+    box-sizing: inherit;
+  }
+  
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+  }
+
+  .navbar {
+    width: 100%;
+    margin-bottom: 50px;
+    padding-left:20px; 
+    padding-right: 50px;
+    background-color: gray;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 2rem;
+    position: fixed; 
+  }
+  
+  .navbar__brand {
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar__logo {
+    width: 90px;
+    margin-right: 10px;
+  }
+  
+  .nav-menu {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    list-style: none;
+    color: white;
+  }
+  
+  .navbar__navigation-item {
+    margin-left: 50px;
+  }
+  
+  .navbar__link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  
+  .navbar__link:hover{
+    text-decoration: underline;
+    color: yellowgreen;
+  }
+
+  .main {
+    flex: 1;
+  }
+  
+  .main-div {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .column {
+    flex: 50%;
+    width: 100%;
+    padding: 10px;
+  }
+
+  .function {
+    margin-top: 70px;
+    height: 100vh;
+    background: url('/static/images/bull_bear.jpeg');
+    background-color: grey;
+    background-size: 100% 100%;
+    background-blend-mode: multiply;
+    justify-content: center;
+    text-align: center;
+    color: white;
+  }
+
+  .description {
+    margin-top:50px;
+    margin-bottom: 0px;
+    font-size: 1.5rem;
+  }
+
+  .about {
+    border: #323f43 solid 1px;
+  }
+
+  #form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 2rem;
+  }
+
+  .form__label {
+    display: inline;
+    white-space: nowrap;
+  }
+
+  fieldset {
+    border: none;
+  }
+  .form__submit {
+    background-color: rgb(253, 68, 0);
+    border: solid gray 1px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 5px 30px;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .form__submit:hover {
+    background-color: rgb(228, 0, 0);
+  } 
+
+  .footer {
+    background-color: #323f43;
+    padding: 40px 0;
+    margin-top: 50px;
+    border-top: 4px solid black;
+    color: white;
+    font-size: 1rem;
+  }
+
+  .footer-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+  }
+  .footer__item {
+    margin-bottom: 5px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .footer__item:hover {
+    text-decoration: underline;
+  }
+  
