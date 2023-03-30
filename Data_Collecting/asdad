@@ -14,7 +14,6 @@ import time
 from pymongo import MongoClient
 
 
-
 client = MongoClient()
 
 # Organize company name and ticker dictionaries 

@@ -24,6 +24,8 @@ def create_app():
         if request.method == 'POST':
             start_date = request.form.get("start")
             end_date = request.form.get("end")
+            if end_date != :
+            
             return render_template('result.html', result=[start_date, end_date])
             return f"Your start date is {start_date} and your end date is {end_date}"
         
