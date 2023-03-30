@@ -20,6 +20,7 @@ def date_conversion(period):
                         (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) < dt.datetime.timestamp(dt.datetime.now())),
                         (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) > dt.datetime.timestamp(dt.datetime.now() - relativedelta(years=3)))
                         ]
+    
     if all(test_correct_date):
         date = dt.datetime.strptime(period, '%Y-%m-%d')
         #return timestamp
@@ -106,6 +107,11 @@ def post_data_generator(start_time, end_time):
     except:
         pass
     return filtered_posts
+
+
+
+
+
 
 post_data = post_data_generator(start_date_input, end_date_input)
 post_num = len(post_data)
