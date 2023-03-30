@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 
-
 {% block function %}
     <h1>Stock Trend Analyzer using r/stock</h1>
-    <p class="description">Put the specific date range to use our r/stock analyzer!</p>
+    <p class="description">Put the specific date range to use our r/stock analyzer!(Date has to be within 3 years range)</p>
     <form id="form" name="input_data" method="POST">
       <fieldset>
         <p>
@@ -12,28 +11,13 @@
         </p>
         <p>
           <label for="end" class="form__label">End date:</label>
-          <input type="date" name="end-end" required pattern="\d{4}-\d{2}-\d{2}" />
+          <input type="date" name="end" required pattern="\d{4}-\d{2}-\d{2}" />
         </p>
         <p>
           <button type="submit" class="form__submit">Analyze</button>
         </p>
       </fieldset>
     </form>
-  </section>
-  <section>
-    {% for entry in entries %}
-      <article class="entry">
-        <div>
-          <h2 class="entry__title">{{ entry[0] | truncate(30, true) }}</h2>
-          <time class="entry__date" datetime="{{ entry[1] }}">• {{ entry[2] }}</time>
-        </div>
-        <p class="entry__content">
-          {{ entry[0] }}
-        </p>
-      </article>
-    {% endfor %}
-  </section>
-
 {% endblock %}
 
 {% block about %}

@@ -1,7 +1,6 @@
 from reddit_posts_data_generator import data_mentioned_stock, date_range, post_data
 import yfinance as yf
 import pandas as pd 
-import yahooquery 
 from collections import Counter
 
 # Generates useful finanical data for the mentioned stocks list  
@@ -30,15 +29,16 @@ for tcker in data_mentioned_stock['Ticker']:
 # convert to dataframe to make it more readable, index starting from 1 
 data_mentioned_stock = pd.DataFrame(data=data_mentioned_stock, 
                                                index=pd.RangeIndex(start=1, stop=26))
+
 # Import negative, positive word files and convert it to a list 
 neg_word_list = open('Data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
 pos_word_list = open('Data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
 
 # make variables to count negative, positive terms mentioned in selftext
-neg_word_count, pos_word_count = [], []
-
+neg_word_count, pos_word_count = 0, 0
 # Count negative, positive words used and return the result and ratio
 def sentiment_measure():
+    """ Code to find out which positive and negative words are most repeated"""
     # global neg_word_count, pos_word_count
     # for title in post_data['title']:
     #     for title_word in title.split():
@@ -56,6 +56,8 @@ def sentiment_measure():
     # counter_pos = Counter(pos_word_count)
     # print(counter_neg)
     # print(counter_pos)
+
+    # counts how many times negative and positive words are mentioned in the gathered title and selftext
     global neg_word_count, pos_word_count
     for title in post_data['title']:
         for title_word in title.split():
@@ -72,5 +74,4 @@ def sentiment_measure():
     print(f'Positive terms: count {pos_word_count}, Negative terms count: {neg_word_count}')
     return round(pos_word_count/neg_word_count, 5)
 
-sentiment_measure()
-
+print(sentiment_measure())
