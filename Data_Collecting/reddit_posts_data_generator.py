@@ -33,7 +33,7 @@ date_range = [dt.datetime.fromtimestamp(start_date_input).strftime("%Y-%m-%d"), 
 
 
 # Organize company name and ticker dictionaries 
-with open('Data/S&P500_tickers_names.csv', 'r') as csv_file:
+with open('data/S&P500_tickers_names.csv', 'r') as csv_file:
     csv_reader = csv.DictReader(csv_file)
     ticker_name_dict = {}
     company_name_dict = {}

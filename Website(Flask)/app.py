@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 
-from Data_Collecting.reddit_posts_data_generator import data_mentioned_stock, date_range, post_data
 app = Flask(__name__, static_folder="static")
 
 @app.route('/', methods=['GET', 'POST'])

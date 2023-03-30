@@ -31,8 +31,8 @@ data_mentioned_stock = pd.DataFrame(data=data_mentioned_stock,
                                                index=pd.RangeIndex(start=1, stop=26))
 
 # Import negative, positive word files and convert it to a list 
-neg_word_list = open('Data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
-pos_word_list = open('Data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
+neg_word_list = open('data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
+pos_word_list = open('data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
 
 # make variables to count negative, positive terms mentioned in selftext
 neg_word_count, pos_word_count = 0, 0
