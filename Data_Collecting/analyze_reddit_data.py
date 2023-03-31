@@ -3,9 +3,10 @@ import yfinance as yf
 import pandas as pd 
 from collections import Counter
 
+
 # Generates useful finanical data for the mentioned stocks list  
-def financial_data_generator(ticker):
-    data = pd.DataFrame(data=yf.Ticker(ticker).history(start=date_range[0], end=date_range[1]))
+def financial_data_generator(ticker, start_date, end_date):
+    data = pd.DataFrame(data=yf.Ticker(ticker).history(start=start_date, end=end_date))
     data.reset_index(inplace=True)
     data['Date'] = data['Date'].dt.date
     data.set_index('Date', inplace=True)

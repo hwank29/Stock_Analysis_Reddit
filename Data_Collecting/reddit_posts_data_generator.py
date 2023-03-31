@@ -1,5 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import pandas as pd
@@ -9,13 +10,17 @@ import string
 import json
 import csv
 import re
+import os 
 import csv
 import time
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
-
-
-client = MongoClient()
+# connects to my mongodb uri 
+client = MongoClient(os.getenv("MONGODB_URI"))
+# sets 'db' to posts_database 
+db = client.posts_database
+post_collection = db.post_collection
 
 # Organize company name and ticker dictionaries 
 with open('data/S&P500_tickers_names.csv', 'r') as csv_file:
@@ -54,95 +59,100 @@ def cleaning(text):
     text = " ".join([t for t in text_tokenize if not t in stop_words])
     return text
 
-# converts 'yyyy-mm-dd' format to timestamp 
-def date_conversion(period):
-    # condition to check whether the inputted time by the user is within 3 year range from today
-    test_correct_date = [
-                        (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) < dt.datetime.timestamp(dt.datetime.now())),
-                        (time.mktime(dt.datetime.strptime(period, "%Y-%m-%d").timetuple()) > dt.datetime.timestamp(dt.datetime.now() - relativedelta(years=3)))
-                        ]
-    
-    if all(test_correct_date):
-        date = dt.datetime.strptime(period, '%Y-%m-%d')
-        #return timestamp
-        return dt.datetime.timestamp(date)
+three_years_from_today_epoch = dt.datetime.timestamp(dt.datetime.now() - relativedelta(years=3))
+today_epoch = dt.datetime.timestamp(dt.datetime.now())
 
-
-# Function to generate data of posts in 'stocks' subreddit during the input time 
+# Function to generate data of posts in 'stocks' subreddit and input the post data into post_collection(mongodb)
+# 'start_time' and 'end_time' are on epoch time
 def post_data_generator(start_time, end_time):
-    # Declare filtered_posts without initilizing
-    start_date_input = date_conversion(start_time)
-    end_date_input = date_conversion(end_time)
-    filtered_posts = None
-    # https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
-    # Can pull 1000 reddit posts per request at max so loop to get every post
-    post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_date_input}&before={end_date_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,upvote_ratio,selftext'
-    def get(uri):
-        response = urlopen(uri)
-        return json.loads(response.read())
-    posts = get(post_data_generator_uri)
-    first_time = True
+    # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time
+    if post_collection.count_documents({}) == 0:
+        # recurse until 3 years of reddit post data are inputted 
+        while True:
+            start_date_input = three_years_from_today_epoch
+            # https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
+            # Can pull 1000 reddit posts per request at max so loop to get every post
+            post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_date_input}&before={today_epoch}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,upvote_ratio,selftext'
+            def get(uri):
+                response = urlopen(uri)
+                return json.loads(response.read())
+            posts = get(post_data_generator_uri)
+            # loop to store reddit post data 
+            for post in posts['data']:
+                if post['selftext'] != '[removed]' and post:
+                    post_document = {'id': post['id'], 
+                                'utc_datetime_str' : post['utc_datetime_str'],
+                                'created_utc' : post['created_utc'], 
+                                'title': cleaning(post['title']),
+                                'score': post['score'],
+                                'upvote_ratio': post['upvote_ratio'],
+                                'selftext': cleaning(post['selftext'])}
+                    post_collection.insert_one(post_document)
 
-    # Loops to store reddit post data 
-    for post in posts['data']:
-        if post['selftext'] != '[removed]' and post:
-            value_input = {'id': post['id'], 
-                           'utc_datetime_str' : post['utc_datetime_str'],
-                           'created_utc' : post['created_utc'], 
-                           'title': cleaning(post['title']),
-                           'score': post['score'],
-                           'upvote_ratio': post['upvote_ratio'],
-                           'selftext': cleaning(post['selftext'])}
-
-            if not first_time:
-                filtered_posts = pd.concat([filtered_posts, pd.DataFrame([value_input])], ignore_index = True)   
+        # recurse until there is no more posts between 'before' and 'after' time 
+            if posts['data']:
+                start_date_input = post_collection.find().sort({"created_utc": -1}).limit(1)
             else:
-                # Need to set filtered_posts before pd.concat
-                first_time = False
-                filtered_posts = pd.DataFrame([value_input])
-    # Recurse until there is no more posts between 'before' and 'after' time 
-    try: 
-        if posts['data']:
-            filtered_posts = pd.concat([filtered_posts, post_data_generator(start_time, filtered_posts.iloc[-1]['created_utc'])], ignore_index = True)
-    except:
-        pass
-    return filtered_posts
+                break
+        return 
+    
+    # when the end_date is greater than the currently inputted document 
+    elif end_time > post_collection.find().sort({"created_utc": -1}).limit(1):
+        while True:
+            # https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
+            # Can pull 1000 reddit posts per request at max so loop to get every post
+            post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={end_time}&before={post_collection.find().sort({"created_utc": -1}).limit(1)}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,upvote_ratio,selftext'
+            def get(uri):
+                response = urlopen(uri)
+                return json.loads(response.read())
+            posts = get(post_data_generator_uri)
 
+            # loop to store reddit post data 
+            for post in posts['data']:
+                if post['selftext'] != '[removed]' and post:
+                    post_document = {'id': post['id'], 
+                                'utc_datetime_str' : post['utc_datetime_str'],
+                                'created_utc' : post['created_utc'], 
+                                'title': cleaning(post['title']),
+                                'score': post['score'],
+                                'upvote_ratio': post['upvote_ratio'],
+                                'selftext': cleaning(post['selftext'])}
+                    post_collection.insert_one(post_document)
 
+        # recurse until there is no more posts between 'before' and 'after' time 
+            if posts['data']:
+                start_date_input = post_collection.find().sort({"created_utc": -1}).limit(1)
+            else:
+                break
+        return
 
-
-
-
-post_data = post_data_generator(start_date_input, end_date_input)
-post_num = len(post_data)
-
-# Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
-for text in post_data['selftext']:
-    for word in word_tokenize(text):
-        if word in list(ticker_name_dict.keys()):
-            ticker_name_dict[word] += 1
-        elif word in list(company_name_dict.keys()):
-            company_name_dict[word] += 1
+# # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
+# for text in post_data['selftext']:
+#     for word in word_tokenize(text):
+#         if word in list(ticker_name_dict.keys()):
+#             ticker_name_dict[word] += 1
+#         elif word in list(company_name_dict.keys()):
+#             company_name_dict[word] += 1
             
-# sums up the number of times a company is mentioned by name and ticker
-company_mentioned_together = company_name_dict.copy()
-for key, value in company_ticker_dict.items():
-    company_mentioned_together[key] += ticker_name_dict[value]
-company_mentioned_together = {key: value for key, value in sorted(company_mentioned_together.items(), key=lambda item: item[1], reverse=True)}    
+# # sums up the number of times a company is mentioned by name and ticker
+# company_mentioned_together = company_name_dict.copy()
+# for key, value in company_ticker_dict.items():
+#     company_mentioned_together[key] += ticker_name_dict[value]
+# company_mentioned_together = {key: value for key, value in sorted(company_mentioned_together.items(), key=lambda item: item[1], reverse=True)}    
 
-name_list, ticker_list, mentioned_num = [], [], []
+# name_list, ticker_list, mentioned_num = [], [], []
 
-for key, value in company_mentioned_together.items():
-    name_list.append(company_capitalize_dict[key])
-    ticker_list.append(ticker_capitalize_dict[company_ticker_dict[key]])
-    mentioned_num.append(value)
+# for key, value in company_mentioned_together.items():
+#     name_list.append(company_capitalize_dict[key])
+#     ticker_list.append(ticker_capitalize_dict[company_ticker_dict[key]])
+#     mentioned_num.append(value)
 
-# rank top 25 most mentioned stops
-data_mentioned_stock = {
-    'Name' : name_list[:25],
-    'Ticker' : ticker_list[:25],
-    'Mentioned' : mentioned_num[:25],
-    'Highest' : [],
-    'Lowest' : [],
-    'Change vs S&P500': [],
-} 
+# # rank top 25 most mentioned stops
+# data_mentioned_stock = {
+#     'Name' : name_list[:25],
+#     'Ticker' : ticker_list[:25],
+#     'Mentioned' : mentioned_num[:25],
+#     'Highest' : [],
+#     'Lowest' : [],
+#     'Change vs S&P500': [],
+# } 
