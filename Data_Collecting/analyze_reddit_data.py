@@ -1,4 +1,3 @@
-from reddit_posts_data_generator import data_mentioned_stock, date_range, post_data
 import yfinance as yf
 import pandas as pd 
 from collections import Counter
