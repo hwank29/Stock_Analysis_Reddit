@@ -1,7 +1,6 @@
 import yfinance as yf
 import pandas as pd 
-from collections import Counter
-
+import datetime as dt
 
 # Generates useful finanical data for the mentioned stocks list  
 def financial_data_generator(ticker, start_date, end_date):
@@ -13,31 +12,31 @@ def financial_data_generator(ticker, start_date, end_date):
     data[['Open', 'High', 'Low', 'Close']] = round(data[['Open', 'High', 'Low', 'Close']], 2)
     return data
 
-# Used data of 'SPY' ETF (S&P 500 index fund)  
-sp500_data = financial_data_generator('SPY')
-sp500_return = ((sp500_data['Close'][-1] - sp500_data['Close'][0])/sp500_data['Close'][0]) * 100
+def analyze_stock(post_df, start_date, end_date):
+    # Used data of 'SPY' ETF (S&P 500 index fund)  
+    sp500_data = financial_data_generator('SPY', dt.datetime.fromtimestamp(start_date), dt.datetime.fromtimestamp(end_date))
+    sp500_return = ((sp500_data['Close'][-1] - sp500_data['Close'][0])/sp500_data['Close'][0]) * 100
 
-# Add historical information for the mentioned stocks to data_mentioned_stock
-for tcker in data_mentioned_stock['Ticker']:
-    stock_financial_data = financial_data_generator(tcker)
-    data_mentioned_stock['Highest'].append(max(stock_financial_data['High']))
-    data_mentioned_stock['Lowest'].append(min(stock_financial_data['Low']))
-    stock_return_num = ((stock_financial_data['Close'][-1] - stock_financial_data['Close'][0]
-                                                                     )/stock_financial_data['Close'][0]) * 100
-    data_mentioned_stock['Change vs S&P500'].append(str(round(((100 + stock_return_num)/(100 + sp500_return) - 1)*100, 2))+'%')
-
-# convert to dataframe to make it more readable, index starting from 1 
-data_mentioned_stock = pd.DataFrame(data=data_mentioned_stock, 
-                                               index=pd.RangeIndex(start=1, stop=26))
+    # Add historical information for the mentioned stocks to data_mentioned_stock
+    for tcker in post_df['Ticker']:
+        stock_financial_data = financial_data_generator(tcker, dt.datetime.fromtimestamp(start_date), dt.datetime.fromtimestamp(end_date))
+        post_df['Highest'].append(max(stock_financial_data['High']))
+        post_df['Lowest'].append(min(stock_financial_data['Low']))
+        stock_return_num = ((stock_financial_data['Close'][-1] - stock_financial_data['Close'][0]
+                                                                        )/stock_financial_data['Close'][0]) * 100
+        post_df['Change vs S&P500'].append(str(round(((100 + stock_return_num)/(100 + sp500_return) - 1)*100, 2))+'%')
+    # convert to dataframe to make it more readable, index starting from 1 
+    post_df = pd.DataFrame(data=post_df, index=pd.RangeIndex(start=1, stop=26))
+    return post_df
 
 # Import negative, positive word files and convert it to a list 
-neg_word_list = open('Data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
-pos_word_list = open('Data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
+neg_word_list = open('data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
+pos_word_list = open('data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
 
 # make variables to count negative, positive terms mentioned in selftext
 neg_word_count, pos_word_count = 0, 0
 # Count negative, positive words used and return the result and ratio
-def sentiment_measure():
+def sentiment_measure(post_df):
     """ Code to find out which positive and negative words are most repeated"""
     # global neg_word_count, pos_word_count
     # for title in post_data['title']:
@@ -59,13 +58,13 @@ def sentiment_measure():
 
     # counts how many times negative and positive words are mentioned in the gathered title and selftext
     global neg_word_count, pos_word_count
-    for title in post_data['title']:
+    for title in post_df['title']:
         for title_word in title.split():
             if title_word in neg_word_list:
                 neg_word_count += 1
             elif title_word in pos_word_list:
                 pos_word_count += 1
-    for text in post_data['selftext']:
+    for text in post_df['selftext']:
         for text_word in text.split():
             if text_word in neg_word_list:
                 neg_word_count += 1
@@ -74,4 +73,3 @@ def sentiment_measure():
     print(f'Positive terms: count {pos_word_count}, Negative terms count: {neg_word_count}')
     return round(pos_word_count/neg_word_count, 5)
 
-print(sentiment_measure())

@@ -2,8 +2,8 @@
 
 <!-- First half of the website(Home) -->
 {% block function %}
-    <h1>Stock Trend Analyzer using r/stock</h1>
-    <p class="description">Put the specific date range to use our r/stock analyzer!(Date has to be within 3 years range)</p>
+    <h1>r/stock Trend Analyzer</h1>
+    <p class="description">Put the specific date range to use our r/stock analyzer!(Date has to be within 2 years range)</p>
     <form id="form" name="input_data" method="POST">
       <fieldset>
         <p>
@@ -24,5 +24,9 @@
 <!-- Second half of the website(Home) -->
 
 {% block about %}
-    This is about
+    <h1 style="font-weight: bold"> About r/stock Trend Analyzer </h1>
+    <p> r/stock Trend Analyzer is built by a college student studying computer science. The main purpose of the project is to 
+        provide resources for investors, including myself, who want to understand trending stocks among 5,300,000 retail investors in 
+        <span href="">r/stock</span> and high quality company analysis from hidden stock masters.
+    </p>
 {% endblock %}
