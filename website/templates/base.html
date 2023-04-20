@@ -21,10 +21,16 @@
       </li>
     </ul>
   </header>
-    
   <main class="main">
     <div class="main-div ">
       <section class="column function">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                  <p class="alert">{{ message }}</p>
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
         {% block function %}
         {% endblock %}
       </section>
@@ -38,7 +44,7 @@
   <footer class="footer">
     <div class="footer-div">
       <a class="footer__item">Made by Hwanhee Kim</a>
-      <a class="footer__item">Check out my other projects!</a>  
+      <a class="footer__item" href="https://github.com/hwank29">Check out my other projects!</a>  
     </div>
   </footer>
 </body>

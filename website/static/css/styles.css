@@ -107,6 +107,12 @@
     border: #323f43 solid 1px;
   }
 
+  .alert {
+    font-size: 2rem;
+    color: red;
+    font-weight: bold;
+    text-decoration: underline;
+  }
   #form {
     display: flex;
     flex-direction: column;
