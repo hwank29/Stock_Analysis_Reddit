@@ -118,6 +118,9 @@ def post_data_generator(start_time, end_time):
 def post_data_analyzer(end_time, start_time):
     # set a dataframe for reddit post data within the range of data inputted and return the dataframe
     post_df = pd.DataFrame(list(post_collection.find({ "created_utc": {"$lte": end_time, "$gte": start_time}})))
+    print(post_df)
+
+    
     post_df = name_counter(post_df)
     post_df = analyze_stock(post_df)
     sentiment_ratio = sentiment_measure(post_df)
