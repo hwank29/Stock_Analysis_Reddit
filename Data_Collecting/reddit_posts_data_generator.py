@@ -63,8 +63,8 @@ def cleaning(text):
     return text
 
 # if first time using 
-two_years_from_today_epoch = int(dt.datetime.timestamp(dt.datetime.now() - relativedelta(years=2)))
-today_epoch = int(dt.datetime.timestamp(dt.datetime.now()))
+two_years_from_today_epoch = int(dt.datetime.timestamp(dt.datetime.utcnow() - relativedelta(years=2)))
+today_epoch = int(dt.datetime.timestamp(dt.datetime.utcnow()))
 # function to generate data of posts in 'stocks' subreddit and input the post data into post_collection(mongodb)
 def post_data_generator(start_time, end_time):
     """if first time using"""
@@ -72,12 +72,13 @@ def post_data_generator(start_time, end_time):
     # end_time_input = today_epoch 
     start_time_input = start_time
     end_time_input = end_time
+    latest_time_doc = post_collection.find_one({}, sort=[('created_utc', 1)])["created_utc"]
+
     while True:
         try:
             # EX: https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
             # can pull 1000 reddit posts per request at max so loop to get every post
             # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time ;; better for regular usage to the user 
-
             post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
             print("start")
             def get(uri):
@@ -100,9 +101,9 @@ def post_data_generator(start_time, end_time):
                                 'link_flair_text': post['link_flair_text']}
                     post_collection.update_one({"id": post_document['id']}, {"$set": post_document}, upsert=True)
             print("stop")
-            # recurse until the time difference between before and after time is less than 12 hours 
-            if posts['data'] and end_time_input > start_time_input + 43200:
-                print(start_time_input)
+            # recurse until there is no more post to add to collection 
+            if posts['data'] and end_time_input != latest_time_doc:
+                latest_time_doc = end_time_input
                 end_time_input = post_collection.find_one({}, sort=[('created_utc', 1)])["created_utc"]
                 print(end_time_input)
             # delete old documents(older than two years) for data storage efficiency
@@ -112,14 +113,17 @@ def post_data_generator(start_time, end_time):
         except socket.timeout:
             # when timeout, it just passes and try again 
             pass
+    return 
+
+def post_data_analyzer(end_time, start_time):
     # set a dataframe for reddit post data within the range of data inputted and return the dataframe
-    
     post_df = pd.DataFrame(list(post_collection.find({ "created_utc": {"$lte": end_time, "$gte": start_time}})))
     post_df = name_counter(post_df)
-    post_df = analyze_stock(post_df, )
+    post_df = analyze_stock(post_df)
     sentiment_ratio = sentiment_measure(post_df)
 
     return [post_df, sentiment_ratio]
+
 
 def name_counter(df):
     # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
