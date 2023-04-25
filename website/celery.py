@@ -8,7 +8,12 @@ celery.conf.timezone = 'UTC'
 celery.conf.beat_schedule = {
     'run-my-task-every-12-hours': {
         'task': 'website.tasks.my_task',
-        'schedule': crontab(hour='*/12')
+        'schedule': crontab(minute='*/10')
     },
 }
 
+# celery -A website.celery.celery beat -l info
+# celery -A website.celery.celery worker -l info
+
+# pkill -f "celery beat"
+# pkill -f "celery worker"

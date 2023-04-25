@@ -1,7 +1,6 @@
 import yfinance as yf
 import pandas as pd 
 import datetime as dt
-
 # Generates useful finanical data for the mentioned stocks list  
 def financial_data_generator(ticker, start_date, end_date):
     data = pd.DataFrame(data=yf.Ticker(ticker).history(start=start_date, end=end_date))
@@ -14,12 +13,12 @@ def financial_data_generator(ticker, start_date, end_date):
 
 def analyze_stock(post_df, start_date, end_date):
     # Used data of 'SPY' ETF (S&P 500 index fund)  
-    sp500_data = financial_data_generator('SPY', dt.datetime.fromtimestamp(start_date), dt.datetime.fromtimestamp(end_date))
+    sp500_data = financial_data_generator('SPY', start_date, end_date)
     sp500_return = ((sp500_data['Close'][-1] - sp500_data['Close'][0])/sp500_data['Close'][0]) * 100
 
     # Add historical information for the mentioned stocks to data_mentioned_stock
     for tcker in post_df['Ticker']:
-        stock_financial_data = financial_data_generator(tcker, dt.datetime.fromtimestamp(start_date), dt.datetime.fromtimestamp(end_date))
+        stock_financial_data = financial_data_generator(tcker, start_date, end_date)
         post_df['Highest'].append(max(stock_financial_data['High']))
         post_df['Lowest'].append(min(stock_financial_data['Low']))
         stock_return_num = ((stock_financial_data['Close'][-1] - stock_financial_data['Close'][0]
@@ -36,7 +35,7 @@ pos_word_list = open('data/sentiment_wordslist/positive_words.txt', 'r').read().
 # make variables to count negative, positive terms mentioned in selftext
 neg_word_count, pos_word_count = 0, 0
 # Count negative, positive words used and return the result and ratio
-def sentiment_measure(post_df):
+def sentiment_measure(title, selftext):
     """ Code to find out which positive and negative words are most repeated"""
     # global neg_word_count, pos_word_count
     # for title in post_data['title']:
@@ -55,21 +54,18 @@ def sentiment_measure(post_df):
     # counter_pos = Counter(pos_word_count)
     # print(counter_neg)
     # print(counter_pos)
-
     # counts how many times negative and positive words are mentioned in the gathered title and selftext
-    global neg_word_count, pos_word_count
-    for title in post_df['title']:
-        for title_word in title.split():
-            if title_word in neg_word_list:
-                neg_word_count += 1
-            elif title_word in pos_word_list:
-                pos_word_count += 1
-    for text in post_df['selftext']:
-        for text_word in text.split():
-            if text_word in neg_word_list:
-                neg_word_count += 1
-            elif text_word in pos_word_list:
-                pos_word_count += 1
+    neg_word_count, pos_word_count = 0, 0
+    for title_word in title.split():
+        if title_word in neg_word_list:
+            neg_word_count += 1
+        elif title_word in pos_word_list:
+            pos_word_count += 1
+    for text_word in selftext.split():
+        if text_word in neg_word_list:
+            neg_word_count += 1
+        elif text_word in pos_word_list:
+            pos_word_count += 1
     print(f'Positive terms: count {pos_word_count}, Negative terms count: {neg_word_count}')
-    return round(pos_word_count/neg_word_count, 5)
+    return [pos_word_count, neg_word_count]
 
