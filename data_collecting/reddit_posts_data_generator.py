@@ -176,7 +176,7 @@ def post_data_analyzer(start_time, end_time):
     } 
     post_df = analyze_stock(data_mentioned_stock, start_time, end_time)
     print(post_df)
-    return [post_df, sentiment_ratio]
+    return [post_df, sentiment_ratio, pos_count, neg_count]
 
 # def name_counter(df):
 #     # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)

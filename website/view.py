@@ -18,7 +18,9 @@ def main():
         if epoch_start_date < epoch_end_date and epoch_end_date < today_epoch and epoch_end_date > two_years_from_today_epoch:
             # if the database is empty or the latest date in any collection is later than the end date, go through data_collecting.reddit_posts_data_generator.py  
             post_df = post_data_analyzer(epoch_start_date, epoch_end_date)
-            return 'great!'
+            print(post_df)
+            return render_template("result.html", column_names=post_df[0].columns.values, row_data=list(post_df[0].values.tolist()), zip=zip, pos_neg_index=post_df[1], pos_count=post_df[2], neg_count=post_df[3])
+
             
         flash('* Incorrect Input Format! *')
     return render_template('main.html')

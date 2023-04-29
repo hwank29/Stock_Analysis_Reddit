@@ -45,6 +45,10 @@
     width: 90px;
     margin-right: 10px;
   }
+  .github {
+    width: 20px;
+
+  }
   
   .nav-menu {
     display: flex;
@@ -96,7 +100,37 @@
     text-align: center;
     color: white;
   }
+  .inline_left {
+    display: inline-block;
+    border: 2px solid lightgray;
+    width:40%;
+    
 
+  }
+  .inline_right {
+    display: block;
+    border: 2px solid lightgray;
+    float: right;
+    width:40%;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin-left:10%;
+    margin-right:10%;
+  }
+  td, th {
+    background-color: rgb(87, 67, 67);
+    color:white;
+    border: 1px solid white;
+    text-align: center;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: gray;
+  }
+    
   .description {
     margin-top:50px;
     margin-bottom: 0px;
