@@ -137,7 +137,8 @@ def post_data_generator(start_time, end_time):
                 print(latest_time_doc)
             # delete old documents(older than two years) for data storage efficiency
             else:
-                post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
+                if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
+                    post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
                 print("end")
                 break
         except socket.timeout:
@@ -169,7 +170,9 @@ def post_data_analyzer(start_time, end_time):
         'Mentioned' : [dict[1] for dict in company_count],
         'Highest' : [],
         'Lowest' : [],
-        'Change vs S&P500': []
+        'Change vs Dow': [],
+        'Change vs S&P500': [],
+        'Change vs Nasdaq': []
     } 
     post_df = analyze_stock(data_mentioned_stock, start_time, end_time)
     print(post_df)

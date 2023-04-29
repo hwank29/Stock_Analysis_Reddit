@@ -173,4 +173,10 @@
   .footer__item:hover {
     text-decoration: underline;
   }
+
+  .dark-theme {
+    background-color: rgb(4, 4, 4);
+
+
+  }
   
