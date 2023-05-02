@@ -15,6 +15,7 @@ import csv
 import re
 import os 
 import csv
+import time
 
 # uses environmental variable from .env to connect to my MongoDB URI
 dotenv_path = Path('website/.env')
@@ -24,6 +25,7 @@ client = MongoClient(os.getenv("MONGODB_URI"))
 # sets 'db' to posts_database 
 db = client.posts_database
 post_collection = db.post_collection
+post_rank_collection = db.post_rank_collection
 
 # Organize company name and ticker dictionaries 
 with open('data/S&P500_tickers_names.csv', 'r') as csv_file:
@@ -98,47 +100,49 @@ def post_data_generator(start_time, end_time):
     latest_time_doc = 0
     while True:
         try:
+            print('start')
             # EX: https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
             # can pull 1000 reddit posts per request at max so loop to get every post
             # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time ;; better for regular usage to the user 
             post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
-            print("start")
             def get(uri):
                 response = urlopen(uri, timeout=10)
-                print("get uri")
+                print('got link')
                 return json.loads(response.read())
             posts = get(post_data_generator_uri)
             # loop to store reddit post data 
             for post in posts['data']:
+                print('doing')
                 # if selftext exists and no repeated document in collection
-                if post['selftext'] != "[removed]" and post['selftext'] != '[deleted]':
+                if post['selftext'] != "[removed]" and post['selftext'] != '[deleted]' and post['selftext'] and post['upvote_ratio'] > 0.4 and post['score'] != 0:
                     post_selftext = cleaning(post['selftext'])
                     post_title = cleaning(post['title'])
-                    print("doing")
-                    print(post['utc_datetime_str'])
                     name_count = name_counter(post_selftext)
-                    post_document = {'id': post['id'], 
-                                'utc_datetime_str' : post['utc_datetime_str'],
+                    post_document = {
                                 'created_utc' : post['created_utc'], 
-                                'title': post_title,
-                                'score': post['score'],
-                                'selftext': post_selftext,
-                                'link_flair_text': post['link_flair_text'],
                                 'stocks_mentioned': name_count[0],
                                 'mentioned_num': name_count[1],
                                 'sentiment': sentiment_measure(post_title, post_selftext)}
-                    post_collection.update_one({"id": post_document['id']}, {"$set": post_document}, upsert=True)
-            print("stop")
+                    post_collection.update_one({"created_utc": post_document['created_utc']}, {"$set": post_document}, upsert=True)
+                if (post['link_flair_text'] == "Company Analysis" or post['link_flair_text'] == "Company Discussion" or post['link_flair_text'] == "Industry Discussion") and post['selftext'] != "[removed]" and post['selftext'] != '[deleted]' and post['score'] > 100:
+                    post_doc_rank = {
+                                'link_flair_text': post['link_flair_text'],
+                                'score': post['score'],
+                                'created_utc' : post['created_utc'], 
+                                'url': post['url'],
+                                'title': post['title']
+                    }
+                    post_rank_collection.insert_one(post_doc_rank)
             # recurse until there is no more post to add to collection 
             if posts['data'] and end_time_input != latest_time_doc:
                 latest_time_doc = end_time_input
                 end_time_input = post_collection.find_one({}, sort=[('created_utc', 1)])["created_utc"]
-                print(end_time_input)
-                print(latest_time_doc)
+                print(latest_time_doc, end_time_input)
             # delete old documents(older than two years) for data storage efficiency
             else:
                 if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
                     post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
+                    post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
                 print("end")
                 break
         except socket.timeout:
@@ -148,22 +152,36 @@ def post_data_generator(start_time, end_time):
 
 def post_data_analyzer(start_time, end_time):
     # set a dataframe for reddit post data within the range of data inputted and return the dataframe
-    post_df = pd.DataFrame(list(post_collection.find({"created_utc": {"$lte": end_time, "$gte": start_time}})))
-    print(post_df)
+    print('start')
+    print(start_time, end_time)
+    print(post_collection)
+    post_df = post_collection.find({"created_utc": {"$gte": start_time, "$lte": end_time}}, {"_id": 0, "created_utc": 0})
+    # print(f'mongo: {time.time() - start}')
     pos_count, neg_count = 0, 0    
     company_count = company_name_dict.copy()
-    for index, row in post_df.iterrows():
-        pos_count += row['sentiment'][0]
-        neg_count += row['sentiment'][1]
+    start = time.time()
+    test = 0
+    for field in post_df:
+        pos_count += field['sentiment'][0]
+        neg_count += field['sentiment'][1]
         index = 0
-        for num in row['mentioned_num']:
+        print(test)
+        test += 1
+        for num in field['mentioned_num']:
             if num != 0:
-                company_count[row['stocks_mentioned'][index]] += num
+                company_count[field['stocks_mentioned'][index]] += num
                 index += 1
-            
+            else:
+                break
+    print(pos_count, neg_count)
+    print(f'sentiment iter: {time.time() - start}')
+    start = time.time()
     sentiment_ratio = round(pos_count/neg_count, 5)
-    company_count = sorted(company_count.items(), key=lambda x: x[1], reverse=True)[:25]
-    
+    print(f'sentiment_ratio: {time.time() - start}')
+    start = time.time()
+    company_count = sorted(company_count.items(), key=lambda x: x[1], reverse=True)[:20]
+    print(f'sorting top 25: {time.time() - start}')
+    start = time.time()
     data_mentioned_stock = {
         'Name' : [company_capitalize_dict[val[0]] for val in company_count],
         'Ticker' : [company_ticker_dict[val[0]].upper() for val in company_count],
@@ -174,39 +192,10 @@ def post_data_analyzer(start_time, end_time):
         'Change vs S&P500': [],
         'Change vs Nasdaq': []
     } 
+    print(f'data_mentioned: {time.time() - start}')
+    start = time.time()
+
     post_df = analyze_stock(data_mentioned_stock, start_time, end_time)
-    print(post_df)
+    print(f'analyze stock: {time.time() - start}')
+
     return [post_df, sentiment_ratio, pos_count, neg_count]
-
-# def name_counter(df):
-#     # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
-#     for text in df['selftext']:
-#         for word in word_tokenize(text):
-#             if word in list(ticker_name_dict.keys()):
-#                 ticker_name_dict[word] += 1
-#             elif word in list(company_name_dict.keys()):
-#                 company_name_dict[word] += 1
-            
-#     # sums up the number of times a company is mentioned by name and ticker
-#     company_mentioned_together = company_name_dict.copy()
-#     for key, value in company_ticker_dict.items():
-#         company_mentioned_together[key] += ticker_name_dict[value]
-#     company_mentioned_together = {key: value for key, value in sorted(company_mentioned_together.items(), key=lambda item: item[1], reverse=True)}    
-
-#     name_list, ticker_list, mentioned_num = [], [], []
-
-#     for key, value in company_mentioned_together.items():
-#         name_list.append(company_capitalize_dict[key])
-#         ticker_list.append(ticker_capitalize_dict[company_ticker_dict[key]])
-#         mentioned_num.append(value)
-
-#     # rank top 25 most mentioned stops
-#     data_mentioned_stock = {
-#         'Name' : name_list[:25],
-#         'Ticker' : ticker_list[:25],
-#         'Mentioned' : mentioned_num[:25],
-#         'Highest' : [],
-#         'Lowest' : [],
-#         'Change vs S&P500': [],
-#     } 
-#     return data_mentioned_stock

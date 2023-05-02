@@ -7,8 +7,8 @@ def financial_data_generator(ticker, start_date, end_date):
     data.reset_index(inplace=True)
     data['Date'] = data['Date'].dt.date
     data.set_index('Date', inplace=True)
-    del data['Stock Splits'], data['Dividends']
-    data[['Open', 'High', 'Low', 'Close']] = round(data[['Open', 'High', 'Low', 'Close']], 2)
+    del data['Stock Splits'], data['Dividends'], data['Open']
+    data[['High', 'Low', 'Close']] = round(data[['High', 'Low', 'Close']], 2)
     return data
 
 def analyze_stock(post_df, start_date, end_date):
@@ -34,7 +34,7 @@ def analyze_stock(post_df, start_date, end_date):
         post_df['Change vs Nasdaq'].append(str(round(((100 + stock_return_num)/(100 + nasdaq_return) - 1)*100, 2))+'%')
 
     # convert to dataframe to make it more readable, index starting from 1 
-    post_df = pd.DataFrame(data=post_df, index=pd.RangeIndex(start=1, stop=26))
+    post_df = pd.DataFrame(data=post_df, index=pd.RangeIndex(start=1, stop=21))
     return post_df
 
 # Import negative, positive word files and convert it to a list 

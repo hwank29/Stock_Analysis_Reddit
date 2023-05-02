@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../static/css/styles.css"/>
 
 </head>
-<body style="background-color: black;">
+<body>
     <header class="navbar">
         <div>
             <div class="navbar__brand">
@@ -28,10 +28,10 @@
         <div style="margin-top: 190px;">
             <section style="margin-bottom: 100px">
                 <div class="inline_left">
-                    <h1 style="color:white;">print</h1>
+                    <h1 >print</h1>
                 </div>
                 <div class="inline_right">
-                    <h1 style="color:white;">print</h1>
+                    <h1>print</h1>
                 </div>
             </section>
             <table>
@@ -41,17 +41,34 @@
                     {% endfor %}
                 </tr>
                 {% for row in row_data %}
-                <tr>
+                <tr class="collapsible">
                     {% for row_ in row %}
                     <td>{{row_}}</td>
                     {% endfor %}
                 </tr>
+                <tr class="content"></tr>
                 {% endfor %}
             </table>
         </div>
         pos_neg_index
         pos_count
         neg_count
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        var i;
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+            });
+        }
+        </script>
+        
     </main>
     
       
