@@ -15,10 +15,7 @@
               </div>
               <ul class="nav-menu">
                 <li class="nav-menu-item">
-                  <a href="#" class="navbar__link">Home </a>
-                </li>
-                <li class="navbar__navigation-item">
-                  <a href="#" class="navbar__link">About</a>
+                    <a href="/" class="navbar__link">Home </a>
                 </li>
               </ul>      
         </div>
@@ -27,48 +24,76 @@
     <main>
         <div style="margin-top: 190px;">
             <section style="margin-bottom: 100px">
-                <div class="inline_left">
-                    <h1 >print</h1>
+                <div class="index_comparison">
+                    {% if %}
+                    {% endif %}
+                    <p >Dow Jones: <p>
+                    <p >S&P 500:<p>
+                    <p >Nasdaq: <p>
                 </div>
-                <div class="inline_right">
+                <div class="sentiment_index">
                     <h1>print</h1>
                 </div>
             </section>
-            <table>
-                <tr>
-                    {% for col in column_names %}
-                    <th>{{col}}</th>
-                    {% endfor %}
-                </tr>
-                {% for row in row_data %}
-                <tr class="collapsible">
-                    {% for row_ in row %}
-                    <td>{{row_}}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="content"></tr>
-                {% endfor %}
-            </table>
+            <div class="table_div">
+                <div class="stock_organized">
+                    <table>
+                        <tr>
+                            {% for col in column_names %}
+                            <th style="border:none;">{{col}}</th>
+                            {% endfor %}
+                        </tr>
+                        {% for row in row_data %}
+                        <tr>
+                            {% for row_ in row %}
+                            <td style="border:none;">{{row_}}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div>
+                    <button type="button" class="collapsible">Top 15 Company Analysis posts </button>
+                    <div class="content">
+                        {% for lst in company_analysis_list %}
+                            <li class="navbar__link" href="{{lst.url}}">{{loop.index}}.  {{lst.title}} <img class="upvote_logo" src="{{ url_for('static', filename='images/upvote.png')}}">{{lst.score}}</li>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="collapsible">Top 15 Company Discussion posts</button>
+                    <div class="content">
+                        {% for lst in company_discussion_list %}
+                            <li class="navbar__link" href="{{lst.url}}">{{loop.index}}.  {{lst.title}} <img class="upvote_logo" src="{{ url_for('static', filename='images/upvote.png')}}">{{lst.score}}</li>
+                        {% endfor %}                    
+                    </div>
+                    <button type="button" class="collapsible">Top 15 Industry Discussion posts</button>
+                    <div class="content">
+                        {% for lst in industry_discussion_list %}
+                            <li class="navbar__link" href="{{lst.url}}">{{loop.index}}.  {{lst.title}} <img class="upvote_logo" src="{{ url_for('static', filename='images/upvote.png')}}">{{lst.score}}</li>
+                        {% endfor %}                    
+                    </div>
+                </div>            
+            </div>
+
         </div>
         pos_neg_index
         pos_count
         neg_count
-    <script>
-        var coll = document.getElementsByClassName("collapsible");
-        var i;
-        for (i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-            this.classList.toggle("active");
-            var content = this.nextElementSibling;
-            if (content.style.display === "block") {
-                content.style.display = "none";
-            } else {
-                content.style.display = "block";
+
+        <script>
+            var coll = document.getElementsByClassName("collapsible");
+            var i;
+            for (i = 0; i < coll.length; i++) {
+              coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.display === "block") {
+                  content.style.display = "none";
+                } else {
+                  content.style.display = "block";
+                }
+              });
             }
-            });
-        }
-        </script>
-        
+            </script>        
     </main>
     
       

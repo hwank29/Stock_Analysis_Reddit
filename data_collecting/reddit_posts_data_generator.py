@@ -6,7 +6,6 @@ from nltk.tokenize import word_tokenize
 from pathlib import Path
 from dotenv import load_dotenv
 from pymongo import MongoClient
-import pandas as pd
 import datetime as dt
 import socket 
 import string
@@ -16,6 +15,7 @@ import re
 import os 
 import csv
 import time
+
 
 # uses environmental variable from .env to connect to my MongoDB URI
 dotenv_path = Path('website/.env')
@@ -152,14 +152,10 @@ def post_data_generator(start_time, end_time):
 
 def post_data_analyzer(start_time, end_time):
     # set a dataframe for reddit post data within the range of data inputted and return the dataframe
-    print('start')
-    print(start_time, end_time)
-    print(post_collection)
+    start = time.time()
     post_df = post_collection.find({"created_utc": {"$gte": start_time, "$lte": end_time}}, {"_id": 0, "created_utc": 0})
-    # print(f'mongo: {time.time() - start}')
     pos_count, neg_count = 0, 0    
     company_count = company_name_dict.copy()
-    start = time.time()
     test = 0
     for field in post_df:
         pos_count += field['sentiment'][0]

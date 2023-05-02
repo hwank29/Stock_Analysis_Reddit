@@ -40,7 +40,10 @@
     display: flex;
     align-items: center;
   }
-  
+  .upvote_logo {
+    width: 15px;
+    margin-left: 10px;
+  }
   .navbar__logo {
     width: 90px;
     margin-right: 10px;
@@ -100,14 +103,15 @@
     text-align: center;
     color: white;
   }
-  .inline_left {
+  .index_comparison {
     display: inline-block;
     border: 2px solid lightgray;
+    text-align: left;
     width:40%;
     
 
   }
-  .inline_right {
+  .sentiment_index {
     display: block;
     border: 2px solid lightgray;
     float: right;
@@ -115,22 +119,46 @@
   }
   table {
     border-collapse: collapse;
-    margin-left:auto;
-    margin-right:auto;
-    width:80%;
+    border: 1px solid #ddd;
+
   }
-  tr, td, th{
+  .table_div {
+    display: flex;
+    margin-left: 4%;
+    margin-right: 4%
+  }
+  .stock_organized {
+    flex: 60%;
+    padding: 0px 10px;
+
+  }
+  .flair_table {
+    flex: 30%;
+    padding: 5px;
+  }
+
+  td, th{
     background-color: #4a4a4a;
     color:white;
-    border: 1px solid white;
-    text-align: center;
+    font-size: 1.3rem;
+    text-align: left;
     padding: 8px;
   }
 
-  tr:nth-child(even) {
-    background-color: rgb(0, 0, 0);
+  th:nth-child(even) {
+    background-color: gray;;
   }
-    
+  td:nth-child(even) {
+    background-color: gray;;
+  }
+  button {
+    width: 100%;
+    height: 6%;
+    color: black;
+    font-size: 2rem;
+    text-align: center;
+    padding: 1rem;
+  }
   .description {
     margin-top:50px;
     margin-bottom: 0px;
@@ -157,6 +185,12 @@
     flex-direction: column;
     align-items: center;
     font-size: 2rem;
+  }
+  li {
+    font-size: 1.5rem ;
+  }
+  li:nth-child(even) {
+    background-color: #f2f2f2d2;
   }
 
   .form__label {
