@@ -194,4 +194,4 @@ def post_data_analyzer(start_time, end_time):
     post_df = analyze_stock(data_mentioned_stock, start_time, end_time)
     print(f'analyze stock: {time.time() - start}')
 
-    return [post_df, sentiment_ratio, pos_count, neg_count]
+    return [post_df[0], sentiment_ratio, pos_count, neg_count, post_df[1]]

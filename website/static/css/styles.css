@@ -70,12 +70,6 @@
     color: inherit;
     cursor: pointer;
   }
-  
-  .navbar__link:hover{
-    text-decoration: underline;
-    color: yellowgreen;
-  }
-
   .main {
     flex: 1;
   }
@@ -105,17 +99,34 @@
   }
   .index_comparison {
     display: inline-block;
-    border: 2px solid lightgray;
     text-align: left;
-    width:40%;
-    
-
+    width:35%;
+    height: 165px;
+    margin-left:1%;
+  }
+  .reddit_image {
+    width: 150px;
+    margin-left: 140.5px;  
+  }
+  .top_info {
+    margin-bottom: 100px;
+    border-bottom: 3px solid black;
+  }
+  
+  #title {
+    margin: 2px;
+  }
+  .reddit_wink {
+    display: inline-block;
+    width:26%;
+    height: 171.31px;
   }
   .sentiment_index {
-    display: block;
-    border: 2px solid lightgray;
-    float: right;
-    width:40%;
+    display: inline-block;
+    width:35%;
+    height: 165px;
+    margin-right: 1%;
+
   }
   table {
     border-collapse: collapse;
@@ -158,6 +169,7 @@
     font-size: 2rem;
     text-align: center;
     padding: 1rem;
+    cursor: pointer;
   }
   .description {
     margin-top:50px;
@@ -185,6 +197,12 @@
     flex-direction: column;
     align-items: center;
     font-size: 2rem;
+  }
+  h2 {
+    padding-bottom: 3px;
+  }
+  h3 {
+    text-align: center;
   }
   li {
     font-size: 1.5rem ;
