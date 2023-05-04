@@ -75,6 +75,5 @@ def sentiment_measure(title, selftext):
             neg_word_count += 1
         elif text_word in pos_word_list:
             pos_word_count += 1
-    print(f'Positive terms: count {pos_word_count}, Negative terms count: {neg_word_count}')
     return [pos_word_count, neg_word_count]
 

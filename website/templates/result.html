@@ -47,15 +47,15 @@
                 </div>
                 <div class="sentiment_index">
                     {% if sentiment_index > 1.05 %}
-                        <h1 style="color:green;">Extreme Positive</h1>
+                        <h1 style="color:green;">Extreme Greed</h1>
                     {% elif sentiment_index > 0.95 %}
-                        <h1 style="color:lightgreen;">Positive</h1>
+                        <h1 style="color:lightgreen;">Greed</h1>
                     {% elif sentiment_index >= 0.88 %}
                         <h1 style="color:gray;">Neutral</h1>
                     {% elif sentiment_index > 0.8 %}
-                        <h1 style="color:rgb(225, 103, 103);">Negative</h1>
+                        <h1 style="color:rgb(225, 103, 103);">Fear</h1>
                     {% else %}
-                        <h1 style="color:red;">Extreme Negative</h1>
+                        <h1 style="color:red;">Extreme Fear</h1>
                     {% endif %}
                     <h3 style="color:green">Positive word count: {{pos_count}} </h3>
                     <h3 style="color: red">Negative word count: {{neg_count}} </h3>

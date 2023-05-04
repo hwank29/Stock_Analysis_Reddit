@@ -14,7 +14,6 @@ import csv
 import re
 import os 
 import csv
-import time
 
 
 # uses environmental variable from .env to connect to my MongoDB URI
@@ -100,19 +99,16 @@ def post_data_generator(start_time, end_time):
     latest_time_doc = 0
     while True:
         try:
-            print('start')
             # EX: https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
             # can pull 1000 reddit posts per request at max so loop to get every post
             # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time ;; better for regular usage to the user 
             post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
             def get(uri):
                 response = urlopen(uri, timeout=10)
-                print('got link')
                 return json.loads(response.read())
             posts = get(post_data_generator_uri)
             # loop to store reddit post data 
             for post in posts['data']:
-                print('doing')
                 # if selftext exists and no repeated document in collection
                 if post['selftext'] != "[removed]" and post['selftext'] != '[deleted]' and post['selftext'] and post['upvote_ratio'] > 0.4 and post['score'] != 0:
                     post_selftext = cleaning(post['selftext'])
@@ -136,14 +132,12 @@ def post_data_generator(start_time, end_time):
             # recurse until there is no more post to add to collection 
             if posts['data'] and end_time_input != latest_time_doc:
                 latest_time_doc = end_time_input
-                end_time_input = post_collection.find_one({}, sort=[('created_utc', 1)])["created_utc"]
-                print(latest_time_doc, end_time_input)
+                end_time_input = post_collection.find_one({}, sort=[('created_utc', -1)])["created_utc"]
             # delete old documents(older than two years) for data storage efficiency
             else:
                 if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
                     post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
                     post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
-                print("end")
                 break
         except socket.timeout:
             # when timeout, it just passes and try again 
@@ -152,32 +146,25 @@ def post_data_generator(start_time, end_time):
 
 def post_data_analyzer(start_time, end_time):
     # set a dataframe for reddit post data within the range of data inputted and return the dataframe
-    start = time.time()
     post_df = post_collection.find({"created_utc": {"$gte": start_time, "$lte": end_time}}, {"_id": 0, "created_utc": 0})
     pos_count, neg_count = 0, 0    
     company_count = company_name_dict.copy()
     test = 0
+    # loop through cursor 
     for field in post_df:
         pos_count += field['sentiment'][0]
         neg_count += field['sentiment'][1]
         index = 0
-        print(test)
         test += 1
+        # when no more mentioned, move to next document
         for num in field['mentioned_num']:
             if num != 0:
                 company_count[field['stocks_mentioned'][index]] += num
                 index += 1
             else:
                 break
-    print(pos_count, neg_count)
-    print(f'sentiment iter: {time.time() - start}')
-    start = time.time()
     sentiment_ratio = round(pos_count/neg_count, 5)
-    print(f'sentiment_ratio: {time.time() - start}')
-    start = time.time()
     company_count = sorted(company_count.items(), key=lambda x: x[1], reverse=True)[:20]
-    print(f'sorting top 25: {time.time() - start}')
-    start = time.time()
     data_mentioned_stock = {
         'Name' : [company_capitalize_dict[val[0]] for val in company_count],
         'Ticker' : [company_ticker_dict[val[0]].upper() for val in company_count],
@@ -188,10 +175,7 @@ def post_data_analyzer(start_time, end_time):
         'Change vs S&P500': [],
         'Change vs Nasdaq': []
     } 
-    print(f'data_mentioned: {time.time() - start}')
-    start = time.time()
 
     post_df = analyze_stock(data_mentioned_stock, start_time, end_time)
-    print(f'analyze stock: {time.time() - start}')
 
     return [post_df[0], sentiment_ratio, pos_count, neg_count, post_df[1]]
