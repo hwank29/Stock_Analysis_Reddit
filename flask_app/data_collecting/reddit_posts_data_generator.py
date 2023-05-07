@@ -29,12 +29,12 @@ db = client.posts_database
 post_collection = db.post_collection
 post_rank_collection = db.post_rank_collection
 
-# # praw set up
-# reddit = praw.Reddit(
-#     client_id=os.getenv("my_client_id"),
-#     client_secret=os.getenv("my_client_secret"),
-#     user_agent="my useragent",
-# )
+# praw set up
+reddit = praw.Reddit(
+    client_id=os.getenv("my_client_id"),
+    client_secret=os.getenv("my_client_secret"),
+    user_agent="my useragent",
+)
 
 # Organize company name and ticker dictionaries 
 with open('flask_app/data/S&P500_tickers_names.csv', 'r') as csv_file:
@@ -107,7 +107,6 @@ def post_data_generator(start_time, end_time):
     start_time_input = start_time
     end_time_input = end_time
     latest_time_doc = 0
-    print(start_time_input, end_time_input)
     while True:
         try:
             # EX: https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
@@ -125,7 +124,6 @@ def post_data_generator(start_time, end_time):
                     post_selftext = cleaning(post['selftext'])
                     post_title = cleaning(post['title'])
                     name_count = name_counter(post_selftext)
-                    print(post['created_utc'])
                     post_document = {
                                 'created_utc' : post['created_utc'], 
                                 'stocks_mentioned': name_count[0],
