@@ -17,10 +17,11 @@ def my_task():
 print()
 celery.conf.timezone = 'UTC'
 
+# background task every one hour
 celery.conf.beat_schedule = {
-    'run-my-task-every-12-hours': {
+    'run-my-task-every-1-hour': {
         'task': 'celery_work.celery.my_task',
-        'schedule': crontab(minute='*/2')
+        'schedule': crontab(hour='*/1')
     },
 }
 

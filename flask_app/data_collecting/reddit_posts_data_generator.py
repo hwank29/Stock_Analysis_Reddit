@@ -19,8 +19,9 @@ import csv
 
 nltk.download('punkt')
 nltk.download('stopwords')
+
 # uses environmental variable from .env to connect to my MongoDB URI
-dotenv_path = Path('/.env')
+dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
 # connects to my mongodb uri 
 client = MongoClient(os.getenv("MONGODB_URI"))
@@ -33,7 +34,7 @@ post_rank_collection = db.post_rank_collection
 reddit = praw.Reddit(
     client_id=os.getenv("my_client_id"),
     client_secret=os.getenv("my_client_secret"),
-    user_agent="my useragent",
+    user_agent="my user agent",
 )
 
 # Organize company name and ticker dictionaries 
@@ -104,43 +105,44 @@ def post_data_generator(start_time, end_time):
     """if first time using"""
     # start_time_input = two_years_from_today_epoch
     # end_time_input = today_epoch 
-    start_time_input = start_time
-    end_time_input = end_time
+    # start_time_input = start_time
     latest_time_doc = 0
     while True:
         try:
-            # EX: https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
+            # Pushshift ver
             # can pull 1000 reddit posts per request at max so loop to get every post
             # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time ;; better for regular usage to the user 
-            post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
-            def get(uri):
-                response = urlopen(uri, timeout=10)
-                return json.loads(response.read())
-            posts = get(post_data_generator_uri)
-            # loop to store reddit post data 
-            for post in posts['data']:
+            # post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
+            # def get(uri):
+            #     response = urlopen(uri, timeout=10)
+            #     return json.loads(response.read())
+            # posts = get(post_data_generator_uri)
+
+            # praw ver 
+            # max limit at 100
+            for post in reddit.subreddit("stocks").new(limit=100):
                 # if selftext exists and no repeated document in collection
-                if post['selftext'] != "[removed]" and post['selftext'] != '[deleted]' and post['selftext'] and post['upvote_ratio'] > 0.4 and post['score'] != 0:
-                    post_selftext = cleaning(post['selftext'])
-                    post_title = cleaning(post['title'])
+                if post.selftext != "[removed]" and post.selftext != '[deleted]' and post.selftext and post.upvote_ratio > 0.4 and post.score != 0:
+                    post_selftext = cleaning(post.selftext)
+                    post_title = cleaning(post.title)
                     name_count = name_counter(post_selftext)
                     post_document = {
-                                'created_utc' : post['created_utc'], 
+                                'created_utc' : post.created_utc, 
                                 'stocks_mentioned': name_count[0],
                                 'mentioned_num': name_count[1],
                                 'sentiment': sentiment_measure(post_title, post_selftext)}
                     post_collection.update_one({"created_utc": post_document['created_utc']}, {"$set": post_document}, upsert=True)
-                if (post['link_flair_text'] == "Company Analysis" or post['link_flair_text'] == "Company Discussion" or post['link_flair_text'] == "Industry Discussion") and post['selftext'] != "[removed]" and post['selftext'] != '[deleted]' and post['score'] > 100:
+                if (post.link_flair_text == "Company Analysis" or post.link_flair_text == "Company Discussion" or post.link_flair_text == "Industry Discussion") and post.selftext != "[removed]" and post.selftext != '[deleted]' and post.score > 100:
                     post_doc_rank = {
-                                'link_flair_text': post['link_flair_text'],
-                                'score': post['score'],
-                                'created_utc' : post['created_utc'], 
-                                'url': post['url'],
-                                'title': post['title']
+                                'link_flair_text': post.link_flair_text,
+                                'score': post.score,
+                                'created_utc' : post.created_utc, 
+                                'url': post.url,
+                                'title': post.title
                     }
                     post_rank_collection.insert_one(post_doc_rank)
             # recurse until there is no more post to add to collection 
-            if posts['data'] and end_time_input != latest_time_doc:
+            if end_time_input != latest_time_doc:
                 latest_time_doc = end_time_input
                 end_time_input = post_collection.find_one({}, sort=[('created_utc', -1)])["created_utc"]
             # delete old documents(older than two years) for data storage efficiency
