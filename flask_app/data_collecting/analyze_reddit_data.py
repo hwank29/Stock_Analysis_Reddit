@@ -38,8 +38,8 @@ def analyze_stock(post_df, start_date, end_date):
     return [post_df, index_change]
 
 # Import negative, positive word files and convert it to a list 
-neg_word_list = open('data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
-pos_word_list = open('data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
+neg_word_list = open('flask_app/data/sentiment_wordslist/negative_words.txt', 'r').read().splitlines()
+pos_word_list = open('flask_app/data/sentiment_wordslist/positive_words.txt', 'r').read().splitlines()
 
 # make variables to count negative, positive terms mentioned in selftext
 neg_word_count, pos_word_count = 0, 0

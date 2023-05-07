@@ -1,0 +1,9 @@
+.git
+.gitignore
+
+dump.rdb
+celerybeat-schedule.db
+
+cache
+venv
+env

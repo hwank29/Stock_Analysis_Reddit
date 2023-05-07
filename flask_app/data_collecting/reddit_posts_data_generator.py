@@ -1,4 +1,4 @@
-from data_collecting.analyze_reddit_data import analyze_stock, sentiment_measure
+from flask_app.data_collecting.analyze_reddit_data import analyze_stock, sentiment_measure
 from dateutil.relativedelta import relativedelta
 from urllib.request import urlopen
 from nltk.corpus import stopwords
@@ -7,6 +7,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pymongo import MongoClient
 import datetime as dt
+import praw
+import nltk
 import socket 
 import string
 import json
@@ -15,9 +17,10 @@ import re
 import os 
 import csv
 
-
+nltk.download('punkt')
+nltk.download('stopwords')
 # uses environmental variable from .env to connect to my MongoDB URI
-dotenv_path = Path('website/.env')
+dotenv_path = Path('/.env')
 load_dotenv(dotenv_path=dotenv_path)
 # connects to my mongodb uri 
 client = MongoClient(os.getenv("MONGODB_URI"))
@@ -26,8 +29,15 @@ db = client.posts_database
 post_collection = db.post_collection
 post_rank_collection = db.post_rank_collection
 
+# praw set up
+reddit = praw.Reddit(
+    client_id=os.getenv("my_client_id"),
+    client_secret=os.getenv("my_client_secret"),
+    user_agent=os.getenv("my_user_agent"),
+)
+
 # Organize company name and ticker dictionaries 
-with open('data/S&P500_tickers_names.csv', 'r') as csv_file:
+with open('flask_app/data/S&P500_tickers_names.csv', 'r') as csv_file:
     csv_reader = csv.DictReader(csv_file)
     ticker_name_dict = {}
     company_name_dict = {}
@@ -97,6 +107,7 @@ def post_data_generator(start_time, end_time):
     start_time_input = start_time
     end_time_input = end_time
     latest_time_doc = 0
+    print(start_time_input, end_time_input)
     while True:
         try:
             # EX: https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after=1609502400&before=1673352000&size=1000&is_video=false&fields=id,created_utc,title,score,upvote_ratio,selftext
@@ -114,6 +125,7 @@ def post_data_generator(start_time, end_time):
                     post_selftext = cleaning(post['selftext'])
                     post_title = cleaning(post['title'])
                     name_count = name_counter(post_selftext)
+                    print(post['created_utc'])
                     post_document = {
                                 'created_utc' : post['created_utc'], 
                                 'stocks_mentioned': name_count[0],
