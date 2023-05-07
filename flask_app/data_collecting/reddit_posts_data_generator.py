@@ -29,12 +29,12 @@ db = client.posts_database
 post_collection = db.post_collection
 post_rank_collection = db.post_rank_collection
 
-# praw set up
-reddit = praw.Reddit(
-    client_id=os.getenv("my_client_id"),
-    client_secret=os.getenv("my_client_secret"),
-    user_agent=os.getenv("my_user_agent"),
-)
+# # praw set up
+# reddit = praw.Reddit(
+#     client_id=os.getenv("my_client_id"),
+#     client_secret=os.getenv("my_client_secret"),
+#     user_agent="my useragent",
+# )
 
 # Organize company name and ticker dictionaries 
 with open('flask_app/data/S&P500_tickers_names.csv', 'r') as csv_file:
