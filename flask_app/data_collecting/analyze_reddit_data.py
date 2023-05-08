@@ -34,7 +34,7 @@ def analyze_stock(post_df, start_date, end_date):
         post_df['Change vs Nasdaq'].append(str(round(((100 + stock_return_num)/(100 + nasdaq_return) - 1)*100, 2))+'%')
     index_change = ([round(dow_return, 2), dow_data['Close'][0], dow_data['Close'][-1]], [round(sp500_return, 2), sp500_data['Close'][0], sp500_data['Close'][-1]], [round(nasdaq_return, 2), nasdaq_data['Close'][0], nasdaq_data['Close'][-1]])
     # convert to dataframe to make it more readable, index starting from 1 
-    post_df = pd.DataFrame(data=post_df, index=pd.RangeIndex(start=1, stop=21))
+    post_df = pd.DataFrame(data=post_df, index=pd.RangeIndex(start=1, stop=26))
     return [post_df, index_change]
 
 # Import negative, positive word files and convert it to a list 

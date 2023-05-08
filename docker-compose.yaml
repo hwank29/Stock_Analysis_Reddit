@@ -17,7 +17,7 @@ services:
       - redis
     networks:
       - app_network
-    command: python3 -u flask_app/run.py
+    command: python3 -um flask_app.run
   celery_worker:
     build: 
       context: .

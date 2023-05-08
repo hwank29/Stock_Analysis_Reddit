@@ -1,4 +1,4 @@
-from website import app
+from .website import app
 from waitress import serve
 
 # def create_app():

@@ -1,4 +1,4 @@
-from flask_app.data_collecting.analyze_reddit_data import analyze_stock, sentiment_measure
+from ..data_collecting.analyze_reddit_data import analyze_stock, sentiment_measure
 from dateutil.relativedelta import relativedelta
 from urllib.request import urlopen
 from nltk.corpus import stopwords
@@ -6,7 +6,7 @@ from nltk.tokenize import word_tokenize
 from pathlib import Path
 from dotenv import load_dotenv
 from pymongo import MongoClient
-import datetime as dt
+from datetime import datetime as dt, timezone
 import praw
 import nltk
 import socket 
@@ -98,15 +98,15 @@ def name_counter(selftext):
     return [name_list, mentioned_num]
 
 # if first time using 
-two_years_from_today_epoch = int(dt.datetime.timestamp(dt.datetime.utcnow() - relativedelta(years=2)))
-today_epoch = int(dt.datetime.timestamp(dt.datetime.utcnow()))
+two_years_from_today_epoch = int(dt.timestamp(dt.now(timezone.utc) - relativedelta(years=2)))
+today_epoch = int(dt.timestamp(dt.now(timezone.utc)))
 # function to generate data of posts in 'stocks' subreddit and input the post data into post_collection(mongodb)
-def post_data_generator(start_time, end_time):
+def post_data_generator():
     """if first time using"""
     # start_time_input = two_years_from_today_epoch
     # end_time_input = today_epoch 
     # start_time_input = start_time
-    latest_time_doc = 0
+    latest_doc_time = 0
     while True:
         try:
             # Pushshift ver
@@ -117,40 +117,38 @@ def post_data_generator(start_time, end_time):
             #     response = urlopen(uri, timeout=10)
             #     return json.loads(response.read())
             # posts = get(post_data_generator_uri)
-
+        
             # praw ver 
             # max limit at 100
-            for post in reddit.subreddit("stocks").new(limit=100):
-                # if selftext exists and no repeated document in collection
-                if post.selftext != "[removed]" and post.selftext != '[deleted]' and post.selftext and post.upvote_ratio > 0.4 and post.score != 0:
-                    post_selftext = cleaning(post.selftext)
-                    post_title = cleaning(post.title)
-                    name_count = name_counter(post_selftext)
-                    post_document = {
-                                'created_utc' : post.created_utc, 
-                                'stocks_mentioned': name_count[0],
-                                'mentioned_num': name_count[1],
-                                'sentiment': sentiment_measure(post_title, post_selftext)}
-                    post_collection.update_one({"created_utc": post_document['created_utc']}, {"$set": post_document}, upsert=True)
-                if (post.link_flair_text == "Company Analysis" or post.link_flair_text == "Company Discussion" or post.link_flair_text == "Industry Discussion") and post.selftext != "[removed]" and post.selftext != '[deleted]' and post.score > 100:
-                    post_doc_rank = {
-                                'link_flair_text': post.link_flair_text,
-                                'score': post.score,
-                                'created_utc' : post.created_utc, 
-                                'url': post.url,
-                                'title': post.title
-                    }
-                    post_rank_collection.insert_one(post_doc_rank)
-            # recurse until there is no more post to add to collection 
-            if end_time_input != latest_time_doc:
-                latest_time_doc = end_time_input
-                end_time_input = post_collection.find_one({}, sort=[('created_utc', -1)])["created_utc"]
-            # delete old documents(older than two years) for data storage efficiency
-            else:
-                if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
-                    post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
-                    post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
-                break
+            for post in reddit.subreddit("stocks").new(limit=None):
+                if post_collection.count_documents({'created_utc': post.created_utc}, limit=1) == 0:
+                    # if selftext exists and no repeated document in collection
+                    if post.selftext != "[removed]" and post.selftext != '[deleted]' and post.selftext and post.upvote_ratio > 0.4 and post.score != 0:
+                        post_selftext = cleaning(post.selftext)
+                        post_title = cleaning(post.title)
+                        name_count = name_counter(post_selftext)
+                        post_document = {
+                                    'created_utc' : post.created_utc, 
+                                    'stocks_mentioned': name_count[0],
+                                    'mentioned_num': name_count[1],
+                                    'sentiment': sentiment_measure(post_title, post_selftext)}
+                        post_collection.update_one({"created_utc": post_document['created_utc']}, {"$set": post_document}, upsert=True)
+                    if (post.link_flair_text == "Company Analysis" or post.link_flair_text == "Company Discussion" or post.link_flair_text == "Industry Discussion") and post.selftext != "[removed]" and post.selftext != '[deleted]' and post.score > 100:
+                        post_doc_rank = {
+                                    'link_flair_text': post.link_flair_text,
+                                    'score': post.score,
+                                    'created_utc' : post.created_utc, 
+                                    'url': post.url,
+                                    'title': post.title
+                        }
+
+                        post_rank_collection.insert_one(post_doc_rank)
+                # delete old documents(older than two years) for data storage efficiency
+                else:
+                    if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
+                        post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
+                        post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
+                    break
         except socket.timeout:
             # when timeout, it just passes and try again 
             pass
@@ -176,7 +174,7 @@ def post_data_analyzer(start_time, end_time):
             else:
                 break
     sentiment_ratio = round(pos_count/neg_count, 5)
-    company_count = sorted(company_count.items(), key=lambda x: x[1], reverse=True)[:20]
+    company_count = sorted(company_count.items(), key=lambda x: x[1], reverse=True)[:25]
     data_mentioned_stock = {
         'Name' : [company_capitalize_dict[val[0]] for val in company_count],
         'Ticker' : [company_ticker_dict[val[0]].upper() for val in company_count],
