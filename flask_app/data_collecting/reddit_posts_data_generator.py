@@ -77,7 +77,6 @@ def name_counter(selftext):
     ticker_dict_copy = ticker_name_dict.copy()
     company_dict_copy = company_name_dict.copy()
     company_ticker_dict_copy = company_ticker_dict.copy()
-
     # Count ticker or company names mentioned in each post(a post can mention the same company name multple times, so one count per post)
     for word in word_tokenize(selftext):
         if word in list(ticker_dict_copy.keys()):
@@ -94,7 +93,6 @@ def name_counter(selftext):
     for key, value in company_mentioned_together.items():
         name_list.append(key)
         mentioned_num.append(value)
-    
     return [name_list, mentioned_num]
 
 # if first time using 

@@ -14,26 +14,31 @@ I initially used Pushshift API to extract posts data from r/stocks. However, on 
 Also, I used yfinance API to to gather in-depth financial data including daily highest, lowest, closed price, and performance compared to 3 majors index. 
 
 ### Data Filtering/Processing
-After receiving post data from praw, I tokenized selftext and title applied 'cleaning' function, which used regular expression to filter out stopwords downloaded from NLTK python package, hyperlinks, and unnecessarily repeated words. This is done to reduce capacity. Then, with the filtered selftext, I searched if a stock name or ticker is mentioned and count which stocks are mentioned their count numbers. I organized the data into stored it using MongoDB database. 
+After receiving post data from praw, I applied 'cleaning' function on selftext and title, which used regular expression to filter out stopwords downloaded from NLTK python package, hyperlinks, and unnecessarily repeated words. This is done to reduce time complexity. Then, I tokenized the filtered selftext and counted stocks names or tickers and their mentioned number and used pandas to organize and analyze the data. 
 
-![cleaning function in reddit_posts_data_generator.py](read_shots/cleaning.png "cleaning function")
+<p float="left">
+  <img src="readme_images/cleaning.png" width="100" />
+  <img src="readme_images/name_counter.png" width="100" /> 
+</p>
 
-This data storing process is done as a background taks using celery. Celery workers asynchronously do the task to give most up to date accurate data for users. 2 years  
+### Database 
+I used MongoDB to store the processed post data. All the documents are within 2 years, and they are updated with celery. Under 'posts_database', there are 2 collections: 'post_collection', with fields of _id, created_utc, mentioned_num, sentiment, stocks_mentioned and 'post_rank_collection', with fields of _id, link_flair_text, score, created_utc, url, title. Under 'post_collection', there are over 25,000 documents, 2 years worth of filtered post data. Under 'post_rank_collection', there are around 700 documents, high quality filtered posts in recent 2 years.  
+
+### Background task
+The data updating process is done as a background task through celery, which use redis as backend and broker. It asynchronously does the task to give most up to date accurate data for users. By using celery beat, it is scheduled to do data collecting process every 4 hours.
+
+<img src="readme_images/celery_screenshot.png" width="50" />
+
+## III. Analysis
 
 
-### Filtering
+## IV. Docker and AWS
 
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
-```
+## V. Result and Self-reflection and suggestions
 
-###
+## VI. Conclusion
 
-## Self-reflect and suggestions
-
-## Conclusion
+## Conclusion and my thoughts
 
 ## Contributors
 Hwanhee Kim(voiucee@gmail.com)

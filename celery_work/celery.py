@@ -3,18 +3,17 @@ from celery import Celery
 from celery.schedules import crontab
 import datetime as dt
 
-
+# start celery
 celery = Celery('tasks', backend='redis://redis:6379/1', broker='redis://redis:6379/0')
 
 @celery.task
 def my_task():
-    # pull posts submissions today
+    # pull recent posts submissions and insert data into MongoDB
     post_data_generator()
 
-print()
 celery.conf.timezone = 'UTC'
 
-# background task every one hour
+# background task every 4 hours
 celery.conf.beat_schedule = {
     'run-my-task-every-4-hour': {
         'task': 'celery_work.celery.my_task',
