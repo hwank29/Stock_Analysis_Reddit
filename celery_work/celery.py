@@ -15,9 +15,9 @@ celery.conf.timezone = 'UTC'
 
 # background task every 4 hours
 celery.conf.beat_schedule = {
-    'run-my-task-every-4-hour': {
+    'run-my-task-every-2-hour': {
         'task': 'celery_work.celery.my_task',
-        'schedule': crontab(hour='*/4')
+        'schedule': crontab(hour='*/2')
     },
 }
 

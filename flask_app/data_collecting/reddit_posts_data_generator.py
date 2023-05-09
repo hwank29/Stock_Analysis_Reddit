@@ -105,53 +105,49 @@ def post_data_generator():
     # end_time_input = today_epoch 
     # start_time_input = start_time
     latest_doc_time = 0
-    while True:
-        try:
-            # Pushshift ver
-            # can pull 1000 reddit posts per request at max so loop to get every post
-            # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time ;; better for regular usage to the user 
-            # post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
-            # def get(uri):
-            #     response = urlopen(uri, timeout=10)
-            #     return json.loads(response.read())
-            # posts = get(post_data_generator_uri)
+    # Pushshift ver
+    # can pull 1000 reddit posts per request at max so loop to get every post
+    # if first time (developer), needs to put 3 years of reddit post data into mongodb database; may take some time ;; better for regular usage to the user 
+    # post_data_generator_uri = f'https://api.pushshift.io/reddit/search/submission?subreddit=stocks&after={start_time_input}&before={end_time_input}&size=1000&is_video=false&fields=id,created_utc,utc_datetime_str,title,score,selftext'
+    # def get(uri):
+    #     response = urlopen(uri, timeout=10)
+    #     return json.loads(response.read())
+    # posts = get(post_data_generator_uri)
+
+    # praw ver 
+    for post in reddit.subreddit("stocks").new(limit=None):
+        print(post.created_utc)
+        if post_collection.count_documents({'created_utc': post.created_utc}, limit=1) == 0:
+            # if selftext exists and no repeated document in collection
+            if post.selftext != "[removed]" and post.selftext != '[deleted]' and post.selftext and post.upvote_ratio > 0.4 and post.score != 0:
+                post_selftext = cleaning(post.selftext)
+                post_title = cleaning(post.title)
+                name_count = name_counter(post_selftext)
+                post_document = {
+                            'created_utc' : post.created_utc, 
+                            'stocks_mentioned': name_count[0],
+                            'mentioned_num': name_count[1],
+                            'sentiment': sentiment_measure(post_title, post_selftext)}
+                post_collection.update_one({"created_utc": post_document['created_utc']}, {"$set": post_document}, upsert=True)
+            if (post.link_flair_text == "Company Analysis" or post.link_flair_text == "Company Discussion" 
+                or post.link_flair_text == "Industry Discussion") and post.selftext != "[removed]" and post.selftext != '[deleted]' and post.score > 100:
+
+                post_doc_rank = {
+                            'link_flair_text': post.link_flair_text,
+                            'score': post.score,
+                            'created_utc' : post.created_utc, 
+                            'url': post.url,
+                            'title': post.title
+                }
+                post_rank_collection.update_one({"created_utc": post_doc_rank['created_utc']}, {"$set": post_document}, upsert=True)
+        # delete old documents(older than two years) for data storage efficiency
+        else:
+            if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
+                post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
+                post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
+            print('done')
+            return
         
-            # praw ver 
-            # max limit at 100
-            for post in reddit.subreddit("stocks").new(limit=None):
-                if post_collection.count_documents({'created_utc': post.created_utc}, limit=1) == 0:
-                    # if selftext exists and no repeated document in collection
-                    if post.selftext != "[removed]" and post.selftext != '[deleted]' and post.selftext and post.upvote_ratio > 0.4 and post.score != 0:
-                        post_selftext = cleaning(post.selftext)
-                        post_title = cleaning(post.title)
-                        name_count = name_counter(post_selftext)
-                        post_document = {
-                                    'created_utc' : post.created_utc, 
-                                    'stocks_mentioned': name_count[0],
-                                    'mentioned_num': name_count[1],
-                                    'sentiment': sentiment_measure(post_title, post_selftext)}
-                        post_collection.update_one({"created_utc": post_document['created_utc']}, {"$set": post_document}, upsert=True)
-                    if (post.link_flair_text == "Company Analysis" or post.link_flair_text == "Company Discussion" or post.link_flair_text == "Industry Discussion") and post.selftext != "[removed]" and post.selftext != '[deleted]' and post.score > 100:
-                        post_doc_rank = {
-                                    'link_flair_text': post.link_flair_text,
-                                    'score': post.score,
-                                    'created_utc' : post.created_utc, 
-                                    'url': post.url,
-                                    'title': post.title
-                        }
-
-                        post_rank_collection.insert_one(post_doc_rank)
-                # delete old documents(older than two years) for data storage efficiency
-                else:
-                    if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
-                        post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
-                        post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
-                    break
-        except socket.timeout:
-            # when timeout, it just passes and try again 
-            pass
-    return 
-
 def post_data_analyzer(start_time, end_time):
     # set a dataframe for reddit post data within the range of data inputted and return the dataframe
     post_df = post_collection.find({"created_utc": {"$gte": start_time, "$lte": end_time}}, {"_id": 0, "created_utc": 0})
