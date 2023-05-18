@@ -32,6 +32,7 @@ The data updating process is done as a background task through celery, which use
 </p>
 
 ### Demonstration and Analysis
+
 A user inputs start date and end date which have to be in the range of two years. 
 <p float="center">
     <img src="readme_images/mainpage_screenshot.png" width="80%" />

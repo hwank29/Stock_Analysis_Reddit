@@ -6,4 +6,5 @@ celerybeat-schedule.db
 
 cache
 venv
-env
+
+readme_images

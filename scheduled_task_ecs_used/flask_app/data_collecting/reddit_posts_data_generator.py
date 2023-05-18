@@ -9,9 +9,7 @@ from pymongo import MongoClient
 from datetime import datetime as dt, timezone
 import praw
 import nltk
-import socket 
 import string
-import json
 import csv
 import re
 import os 
@@ -21,19 +19,23 @@ nltk.download('punkt')
 nltk.download('stopwords')
 
 # uses environmental variable from .env to connect to my MongoDB URI
-dotenv_path = Path('.env')
-load_dotenv(dotenv_path=dotenv_path)
+# dotenv_path = Path('.env')
+# load_dotenv(dotenv_path=dotenv_path)
+
+Mongo_ip = os.environ.get('MONGO_IP')
+
 # connects to my mongodb uri 
-client = MongoClient(os.getenv("MONGODB_URI"))
+client = MongoClient(f'mongodb://{Mongo_ip}:27017/')
 # sets 'db' to posts_database 
-db = client.posts_database
+db = client.post_database
 post_collection = db.post_collection
 post_rank_collection = db.post_rank_collection
 
+
 # praw set up
 reddit = praw.Reddit(
-    client_id=os.getenv("my_client_id"),
-    client_secret=os.getenv("my_client_secret"),
+    client_id=os.environ.get('my_client_id'),
+    client_secret=os.environ.get('my_client_secret'),
     user_agent="my user agent",
 )
 
@@ -116,7 +118,6 @@ def post_data_generator():
 
     # praw ver 
     for post in reddit.subreddit("stocks").new(limit=None):
-        print(post.created_utc)
         if post_collection.count_documents({'created_utc': post.created_utc}, limit=1) == 0:
             # if selftext exists and no repeated document in collection
             if post.selftext != "[removed]" and post.selftext != '[deleted]' and post.selftext and post.upvote_ratio > 0.4 and post.score != 0:
@@ -143,9 +144,9 @@ def post_data_generator():
         # delete old documents(older than two years) for data storage efficiency
         else:
             if post_collection.find({"created_utc": { "$lte" : two_years_from_today_epoch} }):
+                pass
                 post_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch} })
                 post_rank_collection.delete_many({"created_utc" : { "$lte" : two_years_from_today_epoch}})
-            print('done')
             return
         
 def post_data_analyzer(start_time, end_time):

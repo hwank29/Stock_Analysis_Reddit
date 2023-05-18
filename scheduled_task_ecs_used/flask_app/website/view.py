@@ -1,6 +1,5 @@
 from ..data_collecting.reddit_posts_data_generator import post_data_analyzer, two_years_from_today_epoch, today_epoch, post_rank_collection
 from flask import render_template, request, flash
-from celery_work.celery import my_task
 from . import app
 import datetime as dt 
 
@@ -27,7 +26,6 @@ def main():
             # if the database is empty or the latest date in any collection is later than the end date, go through data_collecting.reddit_posts_data_generator.py  
             # return redirect(url_for('result', epoch_start_date=epoch_start_date, epoch_end_date=epoch_end_date))
         flash('* Incorrect Input Format! *')
-    my_task.delay()
     return render_template('main.html')
 
 

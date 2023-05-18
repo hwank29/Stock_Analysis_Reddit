@@ -4,46 +4,94 @@ services:
   flask_app:
     build: 
       context: .
-      dockerfile: flask_app/Dockerfile
+      dockerfile: scheduled_task_ecs_used/flask_app/Dockerfile
     container_name: flask_app
+    image: flask_app
     ports:
-      - "8080:8080"
-    env_file:
-      - .env
+      - "80:80"
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - MONGO_IP=${MONGO_IP}
+      - REDIS_IP=${REDIS_IP}
+      - my_client_id=${my_client_id}
+      - my_client_secret=${my_client_secret}
+      - MONGO_URI=$
     depends_on:
       - redis
+      - mongodb
     networks:
       - app_network
-    command: python3 -um flask_app.run
+    command: python3 -um flask_app.run 
+  
   celery_worker:
     build: 
       context: .
       dockerfile: celery_work/Dockerfile
     container_name: celery_worker
-    command: celery -A celery_work.celery.celery beat -l info
+    image: celery_worker
+    environment:
+      - MONGO_IP=${MONGO_IP}
+      - REDIS_IP=${REDIS_IP}
+      - my_client_id=${my_client_id}
+      - my_client_secret=${my_client_secret}
     depends_on:
       - redis
       - flask_app
+      - mongodb
     networks:
       - app_network
+    volumes:
+      - mongo-data:/data/db
+    command: celery -A celery_work.celery.celery worker -l info -B
+    
+
+
+# public.ecr.aws/peakon/redis:cluster-6.2.5
   redis:
-    image: redis:latest
+    image: 'redis:7.0.11'
     networks:
       - app_network
-  celery_beat:
-    build: 
-      context: .
-      dockerfile: celery_work/Dockerfile
-    container_name: celery_beat
-    command: celery -A celery_work.celery.celery worker -l info
-    depends_on:
-      - redis
-      - flask_app
+    container_name: redis 
+
+  mongodb:
+    image: 'mongo:6.0.5'
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
     networks:
       - app_network
 
+
+  # mongo-express:
+  #   image: 'mongo-express:1.0.0-alpha.4'
+  #   container_name: mongogui
+  #   environment:
+  #     - ME_CONFIG_MONGODB_SERVER:mongodb
+  #     - ME_CONFIG_MONGODB_ADMINUSERNAME:admin
+  #     - ME_CONFIG_MONGODB_ADMINPASSWORD:root
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - app_network
+  #   restart: always
+    
+
+volumes:
+  mongo-data:
+
+  # celery_beat:
+  #   build: 
+  #     context: .
+  #     dockerfile: celery_work/Dockerfile
+  #   container_name: celery_beat
+  #   command: celery -A celery_work.celery.celery beat -l info
+  #   depends_on:
+  #     - redis
+  #     - flask_app
+  #   networks:
+  #     - app_network
+
 networks:
   app_network:
+
