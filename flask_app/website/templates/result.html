@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/styles.css"/>
+
+</head>
+<body>
+    <header class="navbar">
+        <div>
+            <div class="navbar__brand">
+                <img class="navbar__logo" src="{{ url_for('static', filename='images/reddit_smile.jpeg')}}" alt="reddit character smiling image" />r/stocks Analyzer
+              </div>
+              <ul class="nav-menu">
+                <li class="nav-menu-item">
+                    <a href="/" class="navbar__link">Home </a>
+                </li>
+              </ul>      
+        </div>
+    </header>
+
+    <main>
+        <div style="margin-top: 135px;">
+            <section class="top_info" >
+                <div class="index_comparison">
+                    {% if index_change[0][0] > 0 %}
+                        <h2>Dow Jones &emsp;&emsp; {{index_change[0][1]}} -> {{index_change[0][2]}} |<img class="upvote_logo" src="{{ url_for('static', filename='images/arrow_up.png')}}"><span style="color:green">{{index_change[0][0]}}</span>%<h2>
+                    {% else %}
+                        <h2>Dow Jones &emsp;&emsp; {{index_change[0][1]}} -> {{index_change[0][2]}} |<img class="upvote_logo" src="{{ url_for('static', filename='images/arrow_down.png')}}"><span style="color:red">{{index_change[0][0]}} </span>%<h2>
+                    {% endif %}
+                    {% if index_change[1][0] > 0 %}
+                        <h2>S&P500 &emsp;&emsp; {{index_change[1][1]}} -> {{index_change[1][2]}} |<img class="upvote_logo" src="{{ url_for('static', filename='images/arrow_up.png')}}"><span style="color:green">{{index_change[1][0]}}</span>%<h2>
+                    {% else %}
+                        <h2>S&P500 &emsp;&emsp; {{index_change[1][1]}} -> {{index_change[1][2]}} |<img class="upvote_logo" src="{{ url_for('static', filename='images/arrow_down.png')}}"><span style="color:red">{{index_change[1][0]}}</span>%<h2>
+                    {% endif %}
+                    {% if index_change[2][0] > 0 %}
+                        <h2>Nasdaq &emsp;&emsp; {{index_change[2][1]}} -> {{index_change[2][2]}} |<img class="upvote_logo" src="{{ url_for('static', filename='images/arrow_up.png')}}"><span style="color:green">{{index_change[2][0]}}</span>%<h2>
+                    {% else %}
+                        <h2>Nasdaq &emsp;&emsp; {{index_change[2][1]}} -> {{index_change[2][2]}} |<img class="upvote_logo" src="{{ url_for('static', filename='images/arrow_down.png')}}"><span style="color:red">{{index_change[2][0]}}</span>%<h2>
+                    {% endif %}
+                </div>
+                <div class="reddit_wink">
+                    <img class="reddit_image" src="{{ url_for('static', filename='images/reddit_smile.jpeg')}}" alt="reddit character smiling image" />
+                    <h1 id="title">r/stocks Analyzer</h1>
+                </div>
+                <div class="sentiment_index">
+                    {% if sentiment_index > 1.05 %}
+                        <h1 style="color:green;">Extreme Greed</h1>
+                    {% elif sentiment_index > 0.95 %}
+                        <h1 style="color:lightgreen;">Greed</h1>
+                    {% elif sentiment_index > 0.88 %}
+                        <h1 style="color:gray;">Neutral</h1>
+                    {% elif sentiment_index > 0.78 %}
+                        <h1 style="color:rgb(225, 103, 103);">Fear</h1>
+                    {% else %}
+                        <h1 style="color:red;">Extreme Fear</h1>
+                    {% endif %}
+                    <h3 style="color:green">Positive word count: {{pos_count}} </h3>
+                    <h3 style="color: red">Negative word count: {{neg_count}} </h3>
+                </div>
+            </section>
+            <div class="table_div">
+                <div class="stock_organized">
+                    <table>
+                        <tr>
+                            {% for col in column_names %}
+                            <th style="border:none;">{{col}}</th>
+                            {% endfor %}
+                        </tr>
+                        {% for row in row_data %}
+                        <tr>
+                            {% for row_ in row %}
+                            <td style="border:none;">{{row_}}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div>
+                    <button type="button" class="collapsible">Top 15 Company Analysis posts </button>
+                    <div class="content">
+                        {% for lst in company_analysis_list %}
+                            <li class="navbar__link">{{loop.index}}. <a href="{{lst.url}}" target="blank">{{lst.title}} <img class="upvote_logo" src="{{ url_for('static', filename='images/upvote.png')}}"><span class="index_change">{{lst.score}}</span></a></li>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="collapsible">Top 15 Company Discussion posts</button>
+                    <div class="content">
+                        {% for lst in company_discussion_list %}
+                            <li class="navbar__link">{{loop.index}}. <a href="{{lst.url}}" target="blank">{{lst.title}} <img class="upvote_logo" src="{{ url_for('static', filename='images/upvote.png')}}">{{lst.score}}</a></li>
+                        {% endfor %}                    
+                    </div>
+                    <button type="button" class="collapsible">Top 15 Industry Discussion posts</button>
+                    <div class="content">
+                        {% for lst in industry_discussion_list %}
+                            <li class="navbar__link">{{loop.index}}.  <a href="{{lst.url}}" target="blank">{{lst.title}} <img class="upvote_logo" src="{{ url_for('static', filename='images/upvote.png')}}">{{lst.score}}</a></li>
+                        {% endfor %}                    
+                    </div>
+                </div>            
+            </div>
+
+        </div>
+
+        <script>
+            var coll = document.getElementsByClassName("collapsible");
+            var i;
+            for (i = 0; i < coll.length; i++) {
+              coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.display === "block") {
+                  content.style.display = "none";
+                } else {
+                  content.style.display = "block";
+                }
+              });
+            }
+            </script>        
+    </main>
+    
+      
+    <footer class="footer">
+        <div class="footer-div">
+          <a class="footer__item">Made by Hwanhee Kim</a>
+          <a class="footer__item" href="https://github.com/hwank29" target="blank"><img style="width:20px; margin-right:5px;" src="{{ url_for('static', filename='images/github.webp')}}" alt="github image" />Check out my other projects!</a>  
+        </div>
+    </footer>
+    
+</body>
+</html>

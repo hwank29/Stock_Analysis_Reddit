@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> r/stocks Analyzer </title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css')}}" />
+</head>
+<body>
+  <!-- navbar as a header -->
+  <header class="navbar">
+    <div class="navbar__brand">
+      <img class="navbar__logo" src="{{ url_for('static', filename='images/reddit_smile.jpeg')}}" alt="reddit character smiling image" />r/stocks Analyzer
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-menu-item">
+        <a onclick="window.location.reload();" class="navbar__link">Home </a>
+      </li>
+    </ul>
+  </header>
+  <main class="main">
+    <div class="main-div ">
+      <section class="column function">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                  <p class="alert">{{ message }}</p>
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
+        {% block function %}
+        {% endblock %}
+      </section>
+      <section class="column about">
+        {% block about %}
+        {% endblock %}
+      </section>
+    </div>
+
+  </main>
+  <footer class="footer">
+    <div class="footer-div">
+      <a class="footer__item">Made by Hwanhee Kim</a>
+      <a class="footer__item" href="https://github.com/hwank29" target="blank"><img style="width:20px; margin-right:5px;" src="{{ url_for('static', filename='images/github.webp')}}" alt="github image" />Check out my other projects!</a>  
+    </div>
+  </footer>
+</body>
+</html>
