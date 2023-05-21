@@ -25,8 +25,8 @@ nltk.download('stopwords')
 # imports mongo_ip used with celery 
 # Mongo_ip = os.environ.get('MONGO_IP')
 
-# dotenv_path = Path('.env')
-# load_dotenv(dotenv_path=dotenv_path)
+dotenv_path = Path('.env')
+load_dotenv(dotenv_path=dotenv_path)
 
 # imports mongo_uri
 Mongo_URI = os.environ.get('MONGO_URI')

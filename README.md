@@ -21,12 +21,12 @@ After receiving post data from praw, I applied 'cleaning' function on selftext a
 </p>
 
 ### Database 
-I used MongoDB to store the processed post data. All the documents are within 2 years, and they are updated with celery. Under 'posts_database', there are 2 collections: 'post_collection', with fields of _id, created_utc, mentioned_num, sentiment, stocks_mentioned and 'post_rank_collection', with fields of _id, link_flair_text, score, created_utc, url, title. Under 'post_collection', there are over 25,000 documents, 2 years worth of filtered post data. Under 'post_rank_collection', there are around 700 documents, high quality filtered posts in recent 2 years.  
+I used MongoDB Cloud to store the processed post data. All the documents are within 2 years, and they are updated with celery. Under 'posts_database', there are 2 collections: 'post_collection', with fields of _id, created_utc, mentioned_num, sentiment, stocks_mentioned and 'post_rank_collection', with fields of _id, link_flair_text, score, created_utc, url, title. Under 'post_collection', there are over 25,000 documents, 2 years worth of filtered post data. Under 'post_rank_collection', there are around 700 documents, high quality filtered posts in recent 2 years.  
 
 ### Background task
 The data updating process is done as a background task through celery, which use redis as backend and broker. It asynchronously does the task to give most up to date accurate data for users. By using celery beat, it is scheduled to do data collecting process every 4 hours.
 
-<p float="center">
+<p float="left">
     <img src="readme_images/celery_screenshot.png" width="80%" />
     <img src="readme_images/celery_terminal.png" width="80%" />
 </p>
@@ -34,8 +34,9 @@ The data updating process is done as a background task through celery, which use
 ### Demonstration and Analysis
 
 A user inputs start date and end date which have to be in the range of two years. 
-<p float="center">
+<p align="center">
     <img src="readme_images/mainpage_screenshot.png" width="80%" />
+&nbsp; &nbsp; &nbsp; &nbsp;
     <img src="readme_images/resultpage_screenshot.png" width="80%" />
 </p>
 
@@ -48,6 +49,19 @@ Regarding the sentimental analysis, I collect documents matching the time range 
 <img src="readme_images/sentiment_stage_label.png" width="50%" />
 
 ## III. Docker and AWS
+I used docker to containerize my application for the purpose of reducing complexity of running the project and deploying my containerized application to AWS. For local usage, I chose docker-compose to orchestrate 3 containers(flask_app, celery_work, redis) on my laptop with just one command 'docker-compose up'. It really helped me test current version of the project and figure out which container has an issue by looking at its logs. 
+
+<img src="readme_images/docker_compose_image.png" width="50%" />
+
+After I completed working on the project locally, I deployed it to AWS ECS with Fargate. I made an attempt to use ECS with EC2, as it has free tier option. However, I continued to receive an error message that my application required more than 1vCPU with t2.micro, so I decided to use Fargate, instead. I initially uploaded my project images to my private repository in ECR. Then, I created a task definition with IAM to allow permission to pull images from ECR. I used separate security groups and load balancer to control the traffic, preventing potential error or slowdown. After creating a new cluster, I created service and task. It successfully ran. 
+
+<img src="readme_images/ecs_overview.png" width="50%" />
+
+I opened my application with the public IP that it provided, and it worked the same as in my computer. 
+<p float="center">
+    <img src="readme_images/public_ip_home.png" width="80%" />
+    <img src="readme_images/public_ip_result.png" width="80%" />
+</p>
 
 ## IV. Result and Self-Reflection and Suggestions
 
