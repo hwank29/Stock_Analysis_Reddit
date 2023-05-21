@@ -27,8 +27,8 @@ I used MongoDB Cloud to store the processed post data. All the documents are wit
 The data updating process is done as a background task through celery, which use redis as backend and broker. It asynchronously does the task to give most up to date accurate data for users. By using celery beat, it is scheduled to do data collecting process every 4 hours.
 
 <p float="left">
-    <img src="readme_images/celery_screenshot.png" width="80%" />
-    <img src="readme_images/celery_terminal.png" width="80%" />
+    <img src="readme_images/celery_screenshot.png" width="40%" />
+    <img src="readme_images/celery_terminal.png" width="40%" />
 </p>
 
 ### Demonstration and Analysis
